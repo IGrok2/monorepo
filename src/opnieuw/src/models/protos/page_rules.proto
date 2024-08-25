@@ -1,0 +1,142 @@
+syntax = "proto3";
+
+service PageRulesEngine {
+  rpc ChangeEnableStatus(EnableStatusUpdate) returns (QueryResponse);
+
+  rpc AddPageRule(NewPageRule) returns (QueryResponse);
+  rpc UpdatePageRule(UpdatePageRuleSchema) returns (QueryResponse);
+  rpc DeletePageRule(DeletePageRuleSchema) returns (QueryResponse);
+}
+
+message QueryResponse {
+  bool success = 1;
+}
+
+message EnableStatusUpdate {
+  string domain = 1;
+  bool enabled = 2;
+}
+
+// ! NEW PAGE RULE !
+message NewPageRule {
+  // required information
+  string domain = 1;
+  string id = 2;
+  optional sint32 order = 3; // the order it should be in
+  // trigger
+  repeated MatchNew match_type = 4;
+  TriggerRequirement trigger_requirement = 5;
+  bool inversed = 6;
+  // action
+  Action action = 7;
+  optional MonopolyAction monopoly = 8;
+  repeated TrustBustOption trustbust = 9; // optional
+  // optional action options
+  optional string bucket_name = 10;
+  // caching
+  optional CacheLevel cache_level = 11;
+  optional sint32 default_cache_ttl = 12;
+  // redirect to
+  optional string redirect = 13;
+  // use backend, fetch its id
+  optional string backend_id = 14;
+}
+
+message MatchNew {
+  TriggerType trigger = 1;
+  optional string pure_string = 2; // pure string that comes attached
+  repeated string key_value = 3; // map is optional. 0th entry is key, 1st is value!
+  MatchType m_type = 4;
+  bool inversed = 5;
+  bool required = 6;
+}
+//
+
+// ! UPDATE PAGE RULE !
+message UpdatePageRuleSchema {
+  // required information
+  string domain = 1;
+  string id = 2;
+  optional sint32 order = 3; // the order it should be in
+  // trigger
+  repeated MatchNew match_type = 4; // repeated makes this optional
+  optional TriggerRequirement trigger_requirement = 5;
+  optional bool inversed = 6;
+  // action
+  optional Action action = 7;
+  optional MonopolyAction monopoly = 8;
+  repeated TrustBustOption trustbust = 9; // optional
+  // optional action options
+  optional string bucket_name = 10;
+  // caching
+  optional CacheLevel cache_level = 11;
+  optional sint32 default_cache_ttl = 12;
+  // redirect to
+  optional string redirect = 13;
+  // use backend, fetch its id
+  optional string backend_id = 14;
+}
+
+message MatchUpdate {
+  optional TriggerType trigger = 1;
+  optional string pure_string = 2; // pure string that comes attached
+  map<string, string> key_value = 3; // map is optional. 0th entry is key, 1st is value!
+  optional MatchType m_type = 4;
+  optional bool inversed = 5;
+  optional bool required = 6;
+}
+//
+
+// ! DELETE PAGE RULE !
+message DeletePageRuleSchema {
+  string domain = 1;
+  string id = 2;
+  // when it gets popped out, the order automatically shifts (this should be done on the API side too)
+}
+//
+
+enum Action {
+  Monopoly = 0;
+  Trustbusting = 1;
+}
+
+enum MonopolyAction {
+  Block = 0;
+}
+
+enum TrustBustOption {
+  SmartChallenge = 0;
+  CaptchaChallenge = 1;
+  RatelimitBucket = 2;
+  Cache = 3;
+  Redirect = 4;
+  UseBackend = 5;
+}
+
+enum CacheLevel {
+  None = 0;
+  Standard = 1;
+  IgnoreQueryString = 2;
+  Aggressive = 3;
+}
+
+enum TriggerType {
+  Ip = 0;
+  Path = 1;
+  Query = 2;
+  Asn = 3;
+  Country = 4;
+  Continent = 5;
+  Headers = 6;
+}
+
+enum MatchType {
+  Exact = 0;
+  Contains = 1;
+  StartsWith = 2;
+}
+
+enum TriggerRequirement {
+  One = 0;
+  All = 1;
+}

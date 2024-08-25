@@ -1,0 +1,32 @@
+CREATE TABLE [domain_name] ( /* that doesn't mean subdomain -- root domain only! */
+  // the basic analytics
+  date Date,
+  blocked_reqs UInt64,
+  managed_blocked_reqs UInt64,
+  challenged_reqs UInt64,
+  ratelimited_reqs UInt64,
+  managed_ratelimited_reqs UInt64,
+  proxied_reqs UInt64,
+  cached_reqs UInt64,
+  invalid_reqs UInt64,
+  origin_err_reqs UInt64,
+  data_transferred UInt64,
+
+  // ratelimiting buckets
+  buckets Array(Tuple(String, Tuple(UInt64, UInt64))), // bucket name, allowed, ratelimited
+
+  // page rules
+  rules Array(Tuple(String, UInt64)), // id, times hit
+
+  // api engine rules
+  api_engine Array(Tuple(String, UInt64)), // id, times hit
+
+  // origin analytics
+  origin_analytics Array(Tuple(String, Tuple(Tuple(UInt64, UInt64), Array(Tuple(String, UInt64))))), // host, setting hits, urls & url hits
+
+  // private analytics
+  private_analytics Array(Tuple(String, Tuple(UInt64, UInt64))), // setting, passed, ratelimited
+  bots Array(Tuple(String, Tuple(UInt64, UInt64)))
+) ENGINE = MergeTree()
+TTL date + INTERVAL 7 DAY
+ORDER BY date;

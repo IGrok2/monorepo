@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+service OriginManagement {
+  rpc AddOriginSetting(OriginSetting) returns (QueryResponse);
+  rpc ModifyOriginSetting(OriginSetting) returns (QueryResponse);
+  rpc DeleteOriginSetting(OriginSetting) returns (QueryResponse);
+
+  rpc AddOrigin(Origin) returns (QueryResponse);
+  rpc DeleteOrigin(Origin) returns (QueryResponse);
+}
+
+message QueryResponse {
+  bool success = 1;
+}
+
+message OriginSetting {
+  // for identification
+  string domain = 1;
+  string host = 2;
+
+  bool ssl = 3; // essentially strict or flexible mode, if the answer here is false we will continue to accept ssl from the backend
+  bool http2 = 4;
+  sint32 timeout = 5; // timeout to connecting backends
+  bool ip_data = 6; // send ip data to backends?
+}
+
+message Origin {
+  // for identification
+  string domain = 1;
+  string host = 2;
+  string backend = 3;
+  sint32 weight = 4;
+}

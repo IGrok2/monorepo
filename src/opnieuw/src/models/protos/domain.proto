@@ -1,0 +1,17 @@
+// general domain actions
+syntax = "proto3";
+
+package domain;
+
+service Domain {
+  rpc NewDomain(DomainSchema) returns (QueryResponse);
+  rpc DeleteDomain(DomainSchema) returns (QueryResponse);
+}
+
+message QueryResponse {
+  bool success = 1;
+}
+
+message DomainSchema {
+  string domain = 1;
+}

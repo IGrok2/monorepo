@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+service InternalSettingsManagement {
+  rpc UpdateInternalSettings(InternalSetting) returns (QueryResponse);
+}
+
+message QueryResponse {
+  bool success = 1;
+}
+
+message InternalSetting {
+  string domain = 1;
+  optional bool can_cache = 2;
+  optional bool domain_blocked = 3;
+  optional sint32 request_timeout = 4; // uploads and such
+  optional sint32 threat_score_threshold = 5;
+  optional sint32 expected_passed = 6;
+  // bytes / 1000
+  optional sint32 cache_file_max = 7;
+  optional sint32 total_cache_limit = 8;
+
+  optional sint32 allowed_open_conns = 9;
+  optional sint32 server_messages_threshold = 10; // ratelimit serv
+  optional sint32 allowed_ws_messages = 11; // the amount of allowed websocket connections in 10 seconds
+}
