@@ -9,14 +9,14 @@ on:
       - main
 
 jobs:
-  build:
+  pre-commit:
     runs-on: self-hosted
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python (if you're using Python, adjust for your language)
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
