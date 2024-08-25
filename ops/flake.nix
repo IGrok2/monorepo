@@ -33,7 +33,10 @@
             golangci-lint
 
             # protoc (protobuf compiler)
+            grpc
             protobuf
+            go-protobuf
+            protoc-gen-go-grpc
 
             pre-commit
           ];
