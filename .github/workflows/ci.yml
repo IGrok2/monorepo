@@ -56,7 +56,7 @@ jobs:
     - name: Reload direnv
       run: |
         ls
-        direnv allow
+        direnv allow .
 
     - name: Generate gRPC code
       run: |
