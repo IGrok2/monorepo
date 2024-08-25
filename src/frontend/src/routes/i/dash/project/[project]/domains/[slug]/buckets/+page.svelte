@@ -254,7 +254,7 @@
                 <p class="uppercase text-gray-300">at a glance</p>
                 <p class="text-slate-200 text-xl">API engine has handled 239,392 requests</p>
             </div> -->
-            
+
     <div class="flex items-center justify-between">
         <p class="uppercase text-muted-foreground">Ratelimiting Buckets</p>
         <div class="flex flex-wrap flex-1 justify-end space-x-4">

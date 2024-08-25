@@ -33,7 +33,7 @@
                             size: 20, // Set the font size to 20
                         },
                     },
-                },  
+                },
             },
         });
     });
