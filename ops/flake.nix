@@ -39,6 +39,14 @@
             protoc-gen-go-grpc
 
             pre-commit
+
+            # for sveltekit
+            nodejs
+            yarn
+
+            # for opnieuw
+            rustc
+            cargo
           ];
         };
       });
