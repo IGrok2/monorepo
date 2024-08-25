@@ -55,7 +55,6 @@ jobs:
 
     - name: Reload direnv
       run: |
-        ls -a
         nix develop ./ops --extra-experimental-features 'nix-command flakes'
         which protoc
 
