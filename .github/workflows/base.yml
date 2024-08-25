@@ -1,6 +1,12 @@
 name: Base Configuration
 
-on: workflow_call
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   setup-environment:
