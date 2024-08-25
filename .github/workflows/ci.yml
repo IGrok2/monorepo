@@ -53,13 +53,10 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
-    - name: Reload direnv
-      run: |
-        nix develop ./ops --extra-experimental-features 'nix-command flakes'
-        protoc --go_out=. --go-grpc_out=. \
-          --go_opt=paths=source_relative \
-          --go-grpc_opt=paths=source_relative \
-          -I . rpc/*.proto
+    - name: direnv load
+      uses: HatsuneMiku3939/direnv-action@v1
+      with:
+        direnvVersion: 2.32.1
 
     - name: Generate gRPC code
       run: |
