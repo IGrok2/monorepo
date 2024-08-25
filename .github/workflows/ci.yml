@@ -55,8 +55,8 @@ jobs:
 
     - name: Reload direnv
       run: |
-        ls
-        direnv allow .
+        ls -a
+        nix develop ./ops --extra-experimental-features 'nix-command flakes'
 
     - name: Generate gRPC code
       run: |
