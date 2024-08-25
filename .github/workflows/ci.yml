@@ -30,8 +30,8 @@ jobs:
         run: pre-commit run --all-files
 
   nancy-scan:
-    runs-on: self-hosted
-    
+    runs-on: ubuntu-latest
+
     steps:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
