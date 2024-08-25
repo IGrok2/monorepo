@@ -9,9 +9,21 @@ on:
       - main
 
 jobs:
+  setup-environment:
+    runs-on: self-hosted
+
+    steps:
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: direnv load
+      uses: HatsuneMiku3939/direnv-action@v1
+      with:
+        direnvVersion: 2.32.1
+
   pre-commit:
     runs-on: self-hosted
-    uses: ./.github/workflows/base.yml
+    needs: [setup-environment]
 
     steps:
       - name: Run pre-commit checks
@@ -19,7 +31,7 @@ jobs:
 
   nancy-scan:
     runs-on: self-hosted
-    uses: ./.github/workflows/base.yml
+    needs: [setup-environment]
 
     steps:
     - name: WriteGoList
@@ -30,7 +42,7 @@ jobs:
 
   protoc:
     runs-on: self-hosted
-    uses: ./.github/workflows/base.yml
+    needs: [setup-environment]
 
     steps:
     - name: Generate gRPC code
