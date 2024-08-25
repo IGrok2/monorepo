@@ -10,7 +10,6 @@
 
 package rpc
 
-
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -275,7 +274,9 @@ func (x WebMethods) Enum() *WebMethods {
 	*p = x
 	return p
 }
-n protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+
+func (x WebMethods) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
 func (WebMethods) Descriptor() protoreflect.EnumDescriptor {
