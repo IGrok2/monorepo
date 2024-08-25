@@ -1,0 +1,16 @@
+name: Base Configuration
+
+on: workflow_call
+
+jobs:
+  setup-environment:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: direnv load
+      uses: HatsuneMiku3939/direnv-action@v1
+      with:
+        direnvVersion: 2.32.1
