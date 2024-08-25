@@ -56,7 +56,6 @@ jobs:
     - name: Reload direnv
       run: |
         nix develop ./ops --extra-experimental-features 'nix-command flakes'
-        which protoc
 
     - name: Generate gRPC code
       run: |
