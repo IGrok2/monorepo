@@ -9,9 +9,10 @@ use crate::GA;
 
 use crate::templates::error::internal_error;
 
+#[rustfmt::skip]
 lazy_static! {
     static ref IP_DATA: Vec<IPAsnCountry> = get_ip_data();
-};
+}
 
 impl RequestContext {
     // country, continent, asn

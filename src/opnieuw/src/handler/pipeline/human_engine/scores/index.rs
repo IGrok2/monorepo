@@ -6,6 +6,7 @@ use crate::models::request_context::RequestContext;
 
 pub type PipelineFunction = fn(&RequestContext) -> u32;
 
+#[rustfmt::skip]
 lazy_static! {
     static ref PIPELINE: Vec<PipelineFunction> = vec![
         (|s: &RequestContext| -> u32 { s.check_tls() }),
@@ -16,7 +17,7 @@ lazy_static! {
         (|s: &RequestContext| -> u32 { s.check_open_proxy() }),
         (|s: &RequestContext| -> u32 { s.check_internal_ratelimiters() }),
     ];
-};
+}
 
 // TODO: CHECK BURST
 // TODO: INTERNAL COUNTER FOR PATHS

@@ -22,9 +22,10 @@ use tokio_rustls::rustls::ClientConfig;
 use tokio_rustls::TlsConnector;
 use url::Url;
 
+#[rustfmt::skip]
 lazy_static! {
     static ref TLS_CLIENT: Arc<ClientConfig> = tls_config();
-};
+}
 
 pub async fn call_backend(
     ctx: RequestContext,

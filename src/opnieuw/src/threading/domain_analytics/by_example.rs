@@ -62,6 +62,7 @@ pub struct AnalyticByExampleClickHouse {
 use crate::templates::error::internal_error;
 use clickhouse::Client;
 
+#[rustfmt::skip]
 lazy_static! {
     static ref CLICKHOUSE_HOST: String =
         "http://".to_string() + &std::env::var("CLICKHOUSE_HOST").unwrap();
@@ -71,7 +72,7 @@ lazy_static! {
         .with_user("default")
         .with_password(CLICKHOUSE_PASSWORD.as_str())
         .with_database("by-example");
-};
+}
 
 impl DomainContext {
     pub async fn do_analytics_by_example(&self) {

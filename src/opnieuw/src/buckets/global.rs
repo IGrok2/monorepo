@@ -10,9 +10,10 @@ use std::collections::hash_map::RandomState;
 
 use crate::utils::counter::Counter;
 
+#[rustfmt::skip]
 lazy_static! {
     static ref GLOBAL_RATELIMITS: DashMap<String, GlobalRatelimitEntry> = DashMap::new();
-};
+}
 
 #[derive(Debug)]
 pub enum GlobalRatelimitKeys {

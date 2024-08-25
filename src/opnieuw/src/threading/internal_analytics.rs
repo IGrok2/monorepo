@@ -9,7 +9,7 @@ use std::sync::RwLock;
 lazy_static! {
     static ref INTERNAL_ANALYTICS: RwLock<Vec<RandomAnalytic>> = RwLock::new(Vec::new());
     static ref COUNT: Counter = Counter::new();
-};
+}
 
 #[derive(Clone)]
 pub struct RandomAnalytic {

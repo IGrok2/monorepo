@@ -24,7 +24,7 @@ lazy_static! {
         .with_user("default")
         .with_password(CLICKHOUSE_PASSWORD.as_str())
         .with_database("domain-analytics");
-};
+}
 
 #[derive(Debug, Row, Serialize, Deserialize)]
 struct ClickhouseAnalyticRow {

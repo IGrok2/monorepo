@@ -10,7 +10,7 @@ type PCounter = GenericCounter<AtomicF64>;
 
 lazy_static! {
     static ref REGISTRY: Arc<Registry> = Arc::new(Registry::new());
-};
+}
 
 #[get("/")]
 async fn handler() -> impl Responder {
