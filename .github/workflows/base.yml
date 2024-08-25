@@ -4,7 +4,7 @@ on: workflow_call
 
 jobs:
   setup-environment:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
     - name: Check out code into the Go module directory
