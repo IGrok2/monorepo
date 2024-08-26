@@ -1,11 +1,12 @@
-package db
+/*package db
 
 import (
 	"log"
 
+	"packetware/backend/src/models"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"packetware.net/backend/src/models"
 )
 
 func Init() *gorm.DB {
@@ -20,4 +21,4 @@ func Init() *gorm.DB {
 	db.AutoMigrate(&models.User{})
 
 	return db
-}
+	}*/

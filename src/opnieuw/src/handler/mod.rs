@@ -6,7 +6,6 @@ use crate::models::{
     },
 };
 
-pub mod http;
 pub mod index;
 // pub mod error;
 pub mod cgi;
