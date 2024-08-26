@@ -1,4 +1,4 @@
-name: Frontend
+name: Opnieuw
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  eslint:
+  fmt:
     runs-on: self-hosted
 
     steps:
@@ -21,11 +21,11 @@ jobs:
 
       - name: Run pre-commit checks
         run: |
-          cd src/frontend
-          yarn run lint
+          cd src/opnieuw
+          cargo fmt
           git diff --exit-code
 
-  npm-audit:
+  clippy:
     runs-on: self-hosted
 
     steps:
@@ -35,7 +35,7 @@ jobs:
       - name: direnv load
         run: direnv allow
 
-      - name: yarn audit
+      - name: Run clippy
         run: |
-          cd src/frontend
-          yarn audit
+          cd src/opnieuw
+          cargo clippy
