@@ -18,6 +18,7 @@ jobs:
 
       - name: direnv load
         run: direnv allow
+        shell: bash
 
       - name: Run pre-commit checks
         run: |
@@ -25,6 +26,7 @@ jobs:
           cd src/opnieuw
           cargo fmt
           git diff --exit-code
+        shell: bash
 
   clippy:
     runs-on: self-hosted
@@ -37,6 +39,7 @@ jobs:
         run: |
           echo 'eval "$(direnv hook bash)"' >> ~/.bashrc
           direnv allow
+        shell: bash
 
       - name: Run clippy
         run: |
@@ -44,3 +47,4 @@ jobs:
           direnv reload
           cd src/opnieuw
           cargo clippy
+        shell: bash
