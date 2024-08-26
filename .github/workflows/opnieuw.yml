@@ -21,6 +21,7 @@ jobs:
 
       - name: Run pre-commit checks
         run: |
+          direnv reload
           cd src/opnieuw
           cargo fmt
           git diff --exit-code
@@ -37,5 +38,6 @@ jobs:
 
       - name: Run clippy
         run: |
+          direnv reload
           cd src/opnieuw
           cargo clippy
