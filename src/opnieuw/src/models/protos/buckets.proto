@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+service Buckets {
+  rpc NewBucket(NewBucketSchema) returns (QueryResponse);
+  rpc UpdateBucket(UpdateBucketSchema) returns (QueryResponse);
+  rpc DeleteBucket(DeleteBucketSchema) returns (QueryResponse);
+}
+
+message QueryResponse {
+  bool success = 1;
+}
+
+message NewBucketSchema {
+  string domain = 1;
+  string id = 2;
+
+  int32 threshold = 3;
+  int32 timeout = 4;
+}
+
+message UpdateBucketSchema {
+  string domain = 1;
+  string id = 2;
+
+  optional int32 threshold = 3;
+  optional int32 timeout = 4;
+}
+
+message DeleteBucketSchema {
+  string domain = 1;
+  string id = 2;
+}

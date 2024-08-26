@@ -1,0 +1,250 @@
+// we have to send all domain information to the server on startup! TODO!
+
+// this should be absolutely everything!
+
+syntax = "proto3";
+
+package all;
+
+service BigBaller {
+  // on startup message, includes all domains
+  rpc AllDomains(AllDomainSchema) returns (QueryResponse);
+  // update domain after the user, or an admin, makes some changes
+  rpc UpdateDomain(PartialDomainSchema) returns (QueryResponse);
+  // new domain on our service
+  rpc NewDomain(FullDomainSchema) returns (QueryResponse);
+  // deleting a domain from our service
+  rpc DeleteDomain(DeleteDomainSchema) returns (QueryResponse);
+}
+
+// THE MAIN THINGS
+message QueryResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message AllDomainSchema {
+  repeated FullDomainSchema everything = 1;
+}
+
+// for when a domain is updated, only the difference is sent
+message PartialDomainSchema {
+  string domain = 1;
+  map<string, OriginSetting> origin_settings = 2; // if this isn't part of it, then it'll just be empty
+  optional ApiEngineSettings api_engine_settings = 3;
+  optional BotSettings bot_settings = 4;
+  optional CachingSettings cache_settings = 5;
+  optional BucketSettings buckets = 6;
+  optional PageRules page_rules = 7;
+  optional InternalSettings internal_settings = 8;
+}
+
+message FullDomainSchema {
+  string domain = 1;
+  map<string, OriginSetting> origin_settings = 2;
+  ApiEngineSettings api_engine_settings = 3;
+  CachingSettings cache_settings = 4;
+  BucketSettings buckets = 5;
+  PageRules page_rules = 6;
+  InternalSettings internal_settings = 7;
+}
+
+message DeleteDomainSchema {
+  string domain = 1;
+}
+
+// EVERYTHING THAT FOLLOWS
+
+// ORIGINS
+message OriginSetting {
+  string host = 1;
+  bool ssl = 2;
+  bool http2 = 3;
+  sint32 timeout = 4;
+  bool ip_data = 6;
+
+  // origins themselves
+  repeated Origin origins = 7;
+}
+
+message Origin {
+  string url = 1;
+  sint32 weight = 2;
+}
+//
+
+// API ENGINE
+message ApiEngineSettings {
+  bool enabled = 1;
+  map<string, ApiEngineSetting> settings = 2; // key "base" path TODO respect *
+}
+
+message ApiEngineSetting {
+  map<string, string> kv_whitelist_factors = 1; // key_value header whitelist factors for this path
+  repeated string ips = 2;
+
+  repeated ApiEngineRule rules = 3;
+}
+
+message ApiEngineRule {
+  sint32 position = 1;
+  string path = 2;
+  MatchType match_type = 3; // either "Exact", "Contains", or "StartsWith"
+  bool allow_query_string = 4;
+
+  repeated WsMethods ws_methods = 5;
+  repeated WebMethods web_methods = 6;
+
+  optional string ratelimiting_bucket = 7; // {domain}_{id} format
+  optional string cache_level = 8; // None, Standard, IgnoreQueryString or Aggressive
+  optional sint32 cache_level_ttl = 9;
+}
+
+enum WsMethods {
+  Txt = 0;
+  Ping = 1;
+  Binary = 2;
+  Close = 3;
+}
+
+enum WebMethods {
+  Get = 0;
+  Post = 1;
+  Options = 2;
+  Delete = 3;
+}
+//
+
+// CACHING SETTINGS
+message CachingSettings {
+  bool enabled = 1;
+  CacheLevel cache_level = 2;
+  optional sint32 default_ttl = 3;
+}
+
+enum CacheLevel {
+  None = 0;
+  Standard = 1;
+  IgnoreQueryString = 2;
+  Aggressive = 3;
+}
+//
+
+// BOT SETTINGS
+message BotSettings {
+  bool enabled = 1; // if the management is enabled
+  repeated Bot bots = 2; // the allowed bots
+}
+
+enum Bot {
+  Googlebot = 0;
+  Bingbot = 1;
+  UptimeRobot = 2;
+}
+//
+
+// RATELIMITING BUCKET SETTINGS
+message BucketSettings {
+  repeated Bucket buckets = 1;
+}
+
+message Bucket {
+  sint32 threshold = 1;
+  sint32 timeout = 2;
+}
+//
+
+// PAGE RULES
+message PageRules {
+  bool enabled = 1;
+  repeated PageRule rules = 2;
+}
+
+message PageRule {
+  string id = 1;
+  sint32 order = 2;
+  repeated Match matches = 3; // things it can be matched on!
+
+  string trigger_requirement = 4; // either one or all
+
+  Action action = 5;
+  // if action is monopoly ...
+  MonopolyAction monopoly_action = 6;
+  // if action is a trustbust ...
+  repeated TrustBustOption trustbust_option = 7;
+
+  // special action information
+  optional string bucket_name = 8;
+  // caching
+  optional CacheLevel cache_level = 9;
+  optional sint32 cache_ttl = 10;
+  // redirect to
+  optional string redirect = 11;
+  // use backend, fetch from host
+  optional string backend_host = 12;
+}
+
+message Match {
+  TriggerType trigger_type = 1; // ip, path, bunch of other cool stuff
+  MatchType match_type = 2;
+
+  optional string pure_string = 3; // the string we are going to compare the fetched information to
+  map<string, string> key_value = 4; // or optionally, key value data. empty map if it doesn't use key value data.
+
+  // special options
+  bool inversed = 5;
+  bool required = 6;
+}
+
+enum TriggerType {
+  Ip = 0;
+  Path = 1;
+  Query = 2;
+  Asn = 3;
+  Country = 4;
+  Continent = 5;
+  Headers = 6;
+}
+
+// can be shared for API engine as well
+enum MatchType {
+  Exact = 0;
+  Contains = 1;
+  StartsWith = 2;
+}
+
+enum Action {
+  Monopoly = 0;
+  Trustbusting = 1;
+}
+
+enum MonopolyAction {
+  Block = 0;
+}
+
+enum TrustBustOption {
+  SmartChallenge = 0;
+  CaptchaChallenge = 1;
+  RatelimitBucket = 2;
+  Cache = 3;
+  Redirect = 4;
+  UseBackend = 5;
+}
+//
+
+// INTERNAL SETTINGS
+message InternalSettings {
+  bool can_cache = 2;
+  bool domain_blocked = 3;
+  sint32 request_timeout = 4; // uploads and such
+  sint32 threat_score_threshold = 5;
+  sint32 expected_passed = 6;
+  // bytes / 1000
+  sint32 cache_file_max = 7;
+  sint32 total_cache_limit = 8;
+
+  sint32 allowed_open_conns = 9;
+  sint32 server_messages_threshold = 10; // ratelimit serv
+  sint32 allowed_ws_messages = 11; // the amount of allowed websocket connections in 10 seconds
+}
+//

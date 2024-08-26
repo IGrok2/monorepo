@@ -10,3 +10,8 @@ repos:
     rev: v1.60.3
     hooks:
       - id: golangci-lint-full
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v8.37.0
+    hooks:
+      - id: eslint
+        files: "\\.(jsx?|tsx?)$" # match all .js, .jsx, .ts, .tsx files in the entire repo

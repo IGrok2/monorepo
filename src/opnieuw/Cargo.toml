@@ -1,0 +1,89 @@
+[package]
+name = "vulcancore"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# futures for async
+futures = { version = "0.3.30", features = ["executor"] }
+# futures_util for async tools
+futures-util = "0.3.30"
+# hyper is the HTTP library we use
+hyper = { version = "1", features = ["full"] }
+# tokio is the async framework
+tokio = { version = "1", features = ["full"] }
+# hyper body helper
+http-body-util = "0.1"
+# hyper assorted helpers
+hyper-util = { version = "0.1", features = ["full"] }
+# safe pin projection (accessing interior fields of pins whilst we navigate streams and polling)
+pin-project-lite = "0.2.13"
+# rustls specifially for tokio
+tokio-rustls = "0.24.1"
+# to read pemfiles
+rustls-pemfile = "1.0.3"
+# basic url parser
+url = "2.4.1"
+# for our "global variables"
+lazy_static = "1.4.0"
+# concurrent hashmap for lock-free access
+dashmap = "5.5.3"
+# our cool library
+rapidsync = "0.1.9-alpha1"
+# hashing implementation in xxhash, extremely fast yet small hasher
+xxhash-rust = { version = "0.8.10", features = ["xxh3", "const_xxh3"] }
+# serde is used for serializing and deserializing
+serde = { version = "1.0.189", features = ["derive"] }
+# aes gcm
+aes-gcm = { version = "0.10.2", features = ["aes"] }
+# aes
+aes = "0.8.3"
+# rand for random number generation
+rand = "0.8.1"
+# sentry
+sentry = "0.31.7"
+# serde_json for json parsing
+serde_json = "1.0.93"
+# base64 for base64 encoding
+base64 = "0.21.4"
+# clickhouse for analytics
+clickhouse = { version = "0.11.6", features = ["time"] }
+# jsonwebtoken for jwt
+jsonwebtoken = "8.3.0"
+# bytes for general bytes type
+bytes = "1.1.0"
+# dotenv for .env file parsing
+dotenv = "0.15.0"
+# time for domain analytics
+time = "0.3.30"
+# tonic for grpc
+tonic = { version = "0.9.2", features = ["tls", "transport"] }
+# protobuf shit
+prost = "0.11.9"
+# for fetching bots
+reqwest = "0.11.22"
+# for parsing ips
+ip_network = "0.4.1"
+# specifically for special server certificates
+rustls = { version = "0.21.0", features = ["dangerous_configuration"] }
+# for certificate roots
+webpki-roots = "0.25.0"
+# rustls servername
+rustls-pki-types = "0.2.1"
+
+
+# actix is used for global analytics
+actix-web = "4.4.0"
+actix-server = "2.3.0"
+# specifically for global analytics
+prometheus = "0.13.3"
+hyper-rustls = "0.27.1"
+socket2 = "0.5.6"
+pretty_env_logger = "0.5.0"
+anyhow = "1.0.86"
+
+# for building the protobufs
+[build-dependencies]
+tonic-build = "0.9.2"

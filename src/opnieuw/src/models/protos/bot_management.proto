@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+service BotManagement {
+  rpc ChangeEnableStatus(EnableStatus) returns (QueryStatus);
+  rpc AddBot(BotChange) returns (QueryStatus);
+  rpc RemoveBot(BotChange) returns (QueryStatus);
+}
+
+message QueryStatus {
+  bool success = 1;
+}
+
+message EnableStatus {
+  string domain = 1;
+  bool enabled = 2;
+}
+
+message BotChange {
+  string domain = 1;
+  Bot to_change = 2;
+}
+
+enum Bot {
+  Googlebot = 0;
+  Bingbot = 1;
+  UptimeRobot = 2;
+}

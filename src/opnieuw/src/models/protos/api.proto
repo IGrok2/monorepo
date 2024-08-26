@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+service ApiEngine {
+  rpc ChangeEnableStatus(EnableStatusUpdate) returns (QueryResponse);
+
+  rpc AddRuleSettings(RuleSettingSchema) returns (QueryResponse);
+  rpc UpdateRuleSettings(RuleSettingSchema) returns (QueryResponse);
+  rpc DeleteRuleSettings(RuleSettingSchema) returns (QueryResponse);
+
+  rpc AddRuleSetting(NewRule) returns (QueryResponse);
+  rpc UpdateRuleSetting(UpdateRule) returns (QueryResponse);
+  rpc DeleteRuleSetting(DeleteRule) returns (QueryResponse);
+}
+
+message QueryResponse {
+  bool success = 1;
+}
+
+message EnableStatusUpdate {
+  string domain = 1;
+  bool enabled = 2;
+}
+
+message RuleSettingSchema { // can be used for adding, deleting, updating api rules
+  string domain = 1;
+  string path = 2;
+  // following whitelist factors are optional
+  map<string, string> kv_whitelist_factor = 3; // there could be multiple key value header whitelist factors!
+  repeated string ips = 4; // ips that are whitelisted no matter what
+}
+
+message NewRule {
+  string domain = 1;
+  string base_path = 2; // the overarching rule setting path, we use this for identifying rule schemas
+  int32 position = 3;
+  string path = 4; // path for this specific rule, make sure to respect *
+  string trigger_type = 5; // can either be "Exact", "Contains" or "StartsWith"
+  bool allow_query_string = 6; // allow a query string to be passed through
+  // you could have both of the following!
+  repeated string ws_methods = 7; // "optional" websocket methods (Ping, Txt, Binary, Close)
+  repeated string web_methods = 8; // "optional" http methods (Get, Post, Options, Delete)
+  // if the rule matches, it's now technically "allowed," but we allow the user to do more here
+  optional string ratelimit_bucket = 9; // ratelimiting bucket. {domain}_{id} bucket!
+  optional string cache_level = 10; // None, Standard, IgnoreQueryString or Aggressive
+  optional int32 cache_level_ttl = 11; // the optional cache level time to live!
+}
+
+message UpdateRule {
+  // required information!
+  string domain = 1;
+  string base_path = 2;
+  string path = 3;
+  // optionals (to modify)
+  optional int32 position = 4;
+  optional string trigger_type = 5;
+  optional bool allow_query_string = 6;
+  // you could have both of the following!
+  repeated string ws_methods = 7; // "optional" websocket methods (Ping, Txt, Binary, Close)
+  repeated string web_methods = 8; // "optional" http methods (Get, Post, Options, Delete)
+  // if the rule matches, it's now technically "allowed," but we allow the user to do more here
+  optional string ratelimit_bucket = 9; // ratelimiting bucket. {domain}_{id} bucket!
+  optional string cache_level = 10; // None, Standard, IgnoreQueryString or Aggressive
+  optional int32 cache_level_ttl = 11; // the optional cache level time to live!
+}
+
+message DeleteRule {
+  // required information!
+  string domain = 1;
+  string base_path = 2;
+  string path = 3;
+}
