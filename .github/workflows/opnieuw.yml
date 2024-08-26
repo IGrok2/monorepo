@@ -43,6 +43,7 @@ jobs:
 
       - name: Run clippy
         run: |
+          eval "$(direnv export bash)"
           source ~/.bashrc
           direnv reload
           cd src/opnieuw
