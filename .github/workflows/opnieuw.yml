@@ -34,10 +34,13 @@ jobs:
         uses: actions/checkout@v2
 
       - name: direnv load
-        run: direnv allow
+        run: |
+          echo 'eval "$(direnv hook bash)"' >> ~/.bashrc
+          direnv allow
 
       - name: Run clippy
         run: |
+          source ~/.bashrc
           direnv reload
           cd src/opnieuw
           cargo clippy
