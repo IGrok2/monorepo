@@ -51,7 +51,7 @@
           ];
 
           shellHook = ''
-            rustup default stable
+            rustup default nightly
             rustup component add clippy
           '';
         };

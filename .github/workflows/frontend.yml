@@ -20,11 +20,12 @@ jobs:
         run: |
           eval "$(direnv export bash)"
           direnv reload
+          cd src/frontend
           yarn install
           yarn run lint
         shell: bash
 
-  npm-audit:
+  yarn-audit:
     runs-on: self-hosted
 
     steps:
@@ -35,6 +36,7 @@ jobs:
         run: |
           eval "$(direnv export bash)"
           direnv reload
+          cd src/frontend
           yarn install
           yarn audit
         shell: bash
