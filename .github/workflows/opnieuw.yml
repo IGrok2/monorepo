@@ -16,14 +16,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: direnv load
-        run: direnv allow
-        shell: bash
-
-      - name: Run pre-commit checks
+      - name: Run fmt
         run: |
+          eval "$(direnv export bash)"
           direnv reload
-          cd src/opnieuw
           cargo fmt
           git diff --exit-code
         shell: bash
@@ -35,17 +31,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: direnv load
-        run: |
-          echo 'eval "$(direnv hook bash)"' >> ~/.bashrc
-          direnv allow
-        shell: bash
-
       - name: Run clippy
         run: |
           eval "$(direnv export bash)"
-          source ~/.bashrc
           direnv reload
-          cd src/opnieuw
           cargo clippy
         shell: bash
