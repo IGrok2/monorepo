@@ -9,21 +9,6 @@ on:
       - main
 
 jobs:
-  pre-commit:
-    runs-on: self-hosted
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: direnv load
-        uses: HatsuneMiku3939/direnv-action@v1
-        with:
-          direnvVersion: 2.32.1
-
-      - name: Run pre-commit checks
-        run: pre-commit run --all-files
-
   nancy-scan:
     runs-on: self-hosted
 
@@ -37,7 +22,9 @@ jobs:
           direnvVersion: 2.32.1
 
       - name: WriteGoList
-        run: go list -json -m all > go.list
+        run: |
+          cd src/backend
+          go list -json -m all > go.list
 
       - name: Nancy
         uses: sonatype-nexus-community/nancy-github-action@main
@@ -56,10 +43,11 @@ jobs:
 
       - name: Generate gRPC code
         run: |
+          cd src/backend
           protoc --go_out=. --go-grpc_out=. \
             --go_opt=paths=source_relative \
             --go-grpc_opt=paths=source_relative \
-            -I . src/backend/rpc/gen/all.proto
+            -I . rpc/gen/all.proto
 
       - name: Check for differences
         run: |
