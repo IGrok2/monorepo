@@ -1,0 +1,21 @@
+#version: "3.3"
+services:
+  packetware.net:
+    image: packetware.net:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+        - DATABASE_URL=${DATABASE_URL}
+        - PUBLIC_API=${PUBLIC_API}
+        - PRIVATE_API=${PRIVATE_API}
+        - PUBLIC_CMS=${PUBLIC_CMS}
+        - SENTRY_DSN=${SENTRY_DSN}
+        - PUBLIC_SENTRY_ENV=${PUBLIC_SENTRY_ENV}
+        - PRIVATE_DISCORD_NOTIFICATION_WEBHOOK=${PRIVATE_DISCORD_NOTIFICATION_WEBHOOK}
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+    restart: on-failure
