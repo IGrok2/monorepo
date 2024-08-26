@@ -28,8 +28,16 @@ jobs:
           eslint --fix .
           git diff --exit-code
 
+  ls:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: List files
+        run: |
+          ls -la
+
   npm-audit:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
