@@ -129,7 +129,7 @@ impl AnalyticsByExample {
 
                 // get the ip data and the tls fingerprint
                 let ip_info = request_ctx.get_ipdata();
-                let fingerprint = request_ctx.connection_context.fingerprint.clone();
+                let fingerprint = request_ctx.connection_context.fingerprint;
 
                 // get the referrer
                 let referrer = match request_ctx.req.headers.get("referer") {

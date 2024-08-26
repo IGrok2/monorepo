@@ -20,7 +20,7 @@ async fn handler() -> impl Responder {
     let metric_families = REGISTRY.gather();
 
     encoder.encode(&metric_families, &mut buffer).unwrap();
-    format!("{}", String::from_utf8(buffer.clone()).unwrap())
+    String::from_utf8(buffer.clone()).unwrap().to_string()
 }
 
 impl GlobalAnalytics {

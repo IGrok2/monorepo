@@ -64,6 +64,7 @@ struct ClickhouseAnalyticRow {
     api_engine: Vec<(String, u32)>,
 
     // ORIGIN ANALYTICS
+    #[allow(clippy::type_complexity)]
     origin_analytics: Vec<(String, ((u32, u32), Vec<(String, u32)>))>,
 
     // PRIVATE ANALYTICS
@@ -84,12 +85,10 @@ struct ClickhouseAnalyticRow {
 }
 
 fn passed_ratelimited_private(count: u32, threshold: u32) -> (u32, u32) {
-    if count > threshold {
-        (threshold, count - threshold)
-    } else if threshold > count {
-        (count, 0)
-    } else {
-        (threshold, 0)
+    match count {
+        _ if count > threshold => (threshold, count - threshold),
+        _ if threshold > count => (count, 0),
+        _ => (threshold, 0),
     }
 }
 
@@ -155,11 +154,11 @@ pub async fn do_domain_analytics() {
 
                 match k {
                     PrivateKeys::BotKey(x) => {
-                        bots.push((format!("{:?}", x), (passed as u32, threshold as u32)));
+                        bots.push((format!("{:?}", x), (passed, threshold)));
                     }
                     _ => {
                         private_analytics
-                            .push((format!("{:?}", k), (passed as u32, threshold as u32)));
+                            .push((format!("{:?}", k), (passed, threshold)));
                     }
                 }
             }

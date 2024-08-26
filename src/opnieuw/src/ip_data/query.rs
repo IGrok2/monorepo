@@ -28,8 +28,8 @@ impl RequestContext {
 
             if GlobalRatelimitKeys::IpLookups.is_allowed() {
                 for x in IP_DATA.iter() {
-                    if &self.ip.socket_addr >= &x.starting_ip
-                        && &self.ip.socket_addr <= &x.ending_ip
+                    if self.ip.socket_addr >= x.starting_ip
+                        && self.ip.socket_addr <= x.ending_ip
                     {
                         self.ip.set_data(IpData {
                             country: x.country.clone(),
@@ -55,10 +55,10 @@ impl RequestContext {
 
         // internal_error(&format!("couldn't find any data for IP: {}", &self.ip.to_string()));
 
-        return (
+        (
             "UNAVAILABLE".to_string(),
             "UNAVAILABLE".to_string(),
             "UNAVAILABLE".to_string(),
-        );
+        )
     }
 }

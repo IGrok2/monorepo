@@ -213,11 +213,8 @@ impl RpcToRust {
 
                 let mut actions = Vec::new();
 
-                if let Some(t) = r.cache_level.clone() {
-                    let ttl = match r.cache_level_ttl {
-                        Some(_m) => Some(Duration::from_secs(t as u64)),
-                        None => None, // use the default for this domain
-                    };
+                if let Some(t) = r.cache_level {
+                    let ttl = r.cache_level_ttl.map(|_m| Duration::from_secs(t as u64));
 
                     actions.push(Action::Cache(
                         match t {
@@ -359,7 +356,7 @@ impl RpcToRust {
 
     pub fn page_rules(
         pr: RpcPageRules,
-        old_c: Option<RulesSettings>,
+        _old_c: Option<RulesSettings>,
         buckets: Vec<Arc<PublicBucket>>,
         origin_settings: OriginSettings,
     ) -> Result<RulesSettings, String> {
@@ -571,10 +568,7 @@ impl RpcToRust {
                                         _ => return Err("Cache level unimplemented".to_string())
                                     };
 
-                                    let ttl = match i.cache_ttl {
-                                        Some(t) => Some(Duration::from_secs(t as u64)),
-                                        None => None
-                                    };
+                                    let ttl = i.cache_ttl.map(|t| Duration::from_secs(t as u64));
 
                                     Trustbusting::Cache(cache_level, ttl)
                                 } else {
@@ -620,33 +614,18 @@ impl RpcToRust {
                 max = Some(i.rule_max as u32);
             }
 
-            if old_c.is_none() || rules.is_empty() {
-                rules.push(PageRule {
-                    id: i.id.clone(),
-                    trigger: Trigger {
-                        match_type,
-                        trigger_requirement,
-                        inversed: i.inversed,
-                    },
-                    action,
-                    analytic: Counter::new(),
-                    enabled: i.enabled,
-                    max,
-                });
-            } else {
-                rules.push(PageRule {
-                    id: i.id.clone(),
-                    trigger: Trigger {
-                        match_type,
-                        trigger_requirement,
-                        inversed: i.inversed,
-                    },
-                    action,
-                    analytic: Counter::new(),
-                    enabled: i.enabled,
-                    max,
-                });
-            }
+            rules.push(PageRule {
+                id: i.id.clone(),
+                trigger: Trigger {
+                    match_type,
+                    trigger_requirement,
+                    inversed: i.inversed,
+                },
+                action,
+                analytic: Counter::new(),
+                enabled: i.enabled,
+                max,
+            });
         }
 
         Ok(RulesSettings {

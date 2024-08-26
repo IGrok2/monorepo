@@ -129,15 +129,13 @@ pub fn debug_setup() {
         attempted_cache: 1000,
     };
 
-    let mut buckets = Vec::new();
-
-    buckets.push(PublicBucket::new(
+    let buckets = vec![PublicBucket::new(
         "Balls, biggest".to_string(),
         "69".to_string(),
         1000,
         2,
         false,
-    ));
+    )];
 
     DOMAINS_DB.insert(
         "rizzle.chat".to_string(),

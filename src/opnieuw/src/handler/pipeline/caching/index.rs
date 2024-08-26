@@ -74,7 +74,7 @@ impl RequestContext {
                     }
 
                     // create the builder
-                    let mut builder = Response::builder().status(t.http_status.clone());
+                    let mut builder = Response::builder().status(t.http_status);
 
                     // get the headers
                     let headers = builder.headers_mut().unwrap();

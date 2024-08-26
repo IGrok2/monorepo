@@ -14,14 +14,14 @@ impl<T> BallerLock<T> {
     pub fn read(&self) -> RwLockReadGuard<T> {
         match self.inner.read() {
             Ok(t) => t,
-            Err(e) => panic!("Lock was poisoned! {}", e.to_string()),
+            Err(e) => panic!("Lock was poisoned! {}", e),
         }
     }
 
     pub fn write(&self) -> RwLockWriteGuard<T> {
         match self.inner.write() {
             Ok(t) => t,
-            Err(e) => panic!("Lock was poisoned! {}", e.to_string()),
+            Err(e) => panic!("Lock was poisoned! {}", e),
         }
     }
 }

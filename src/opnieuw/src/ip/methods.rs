@@ -1,4 +1,4 @@
-use crate::ip::models::{IpData, ProtectedReferences, Token, TrafficType, IP};
+use crate::ip::models::{IpData, ProtectedReferences, Token, NewTrafficType, IP};
 use crate::utils::counter::Counter;
 use crate::utils::cycle::Cycle;
 use crate::IPS;
@@ -34,15 +34,15 @@ impl IP {
     }
 
     // Allow a request to be made
-    pub fn allow(&self, traffic_type: TrafficType) -> bool {
+    pub fn allow(&self, traffic_type: NewTrafficType) -> bool {
         if self.points.get() > 2000 {
             return false;
         }
 
         match traffic_type {
-            TrafficType::NewStream => self.points.inc_by(69).get() < 2000,
-            TrafficType::NewRequest => self.points.inc_by(2).get() < 2000,
-            TrafficType::NewToken => {
+            NewTrafficType::Stream => self.points.inc_by(69).get() < 2000,
+            NewTrafficType::Request => self.points.inc_by(2).get() < 2000,
+            NewTrafficType::Token => {
                 if self.points.inc_by(50).get() > 2000 {
                     return false;
                 }
@@ -116,10 +116,7 @@ impl IP {
     pub fn get_data(&self) -> Option<IpData> {
         let read_lock = self.data.read().unwrap();
 
-        match &*read_lock {
-            Some(data) => Some(data.clone()),
-            None => None,
-        }
+        (*read_lock).clone()
     }
 
     // Set IP address data

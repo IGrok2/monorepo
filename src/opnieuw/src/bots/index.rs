@@ -11,15 +11,18 @@ pub async fn get_bots() {
     // the vector we will end up returning
 
     println!("Getting Googlebot ...");
+    let google = get_google().await;
     crate::BOTS.write().insert(
         Bots::Googlebot,
-        Arc::new((get_google().await, "Googlebot".to_string())),
+        Arc::new((google, "Googlebot".to_string())),
     );
+
     println!("Getting Bingbot ...");
+    let bing = get_bing().await;
     crate::BOTS.write().insert(
         Bots::Bingbot,
         Arc::new((
-            get_bing().await,
+            bing,
             "(compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)".to_string(),
         )),
     );

@@ -65,7 +65,7 @@ pub async fn async_read(wrapper: Arc<Pin<&mut TcpStream>>) -> std::io::Result<Ve
         .read(&mut raw_buf)
         .await;
 
-    return Ok(raw_buf.to_vec());
+    Ok(raw_buf.to_vec())
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq, Copy)]
@@ -150,7 +150,9 @@ fn calculate_hexa(payload: &ClientHelloPayload) -> TlsFingerprint {
 
     debug!("hashed fingerprint: {}", hashed_fingerprint);
 
-    let fingerprint = match hashed_fingerprint {
+    
+
+    match hashed_fingerprint {
         1725583512279762209 | 10593271021972699412 | 8926745370823963578 => {
             GA.tls.firefox.inc();
             TlsFingerprint::Firefox
@@ -167,9 +169,7 @@ fn calculate_hexa(payload: &ClientHelloPayload) -> TlsFingerprint {
             GA.tls.unknown.inc();
             TlsFingerprint::Unknown
         }
-    };
-
-    fingerprint
+    }
 }
 
 fn parse_client_hello(data: &[u8]) -> Option<ClientHelloPayload> {

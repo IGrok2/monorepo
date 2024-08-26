@@ -50,13 +50,13 @@ pub async fn handler(
 ) -> HttpResponse {
     // increment the global analytic for a new request coming in
     GA.requests.inc();
+    let global_ratelimit_resp = conn_ctx.global_ratelimit();
 
     debug!("Request: {:?}, {:?}", req, conn_ctx);
 
     // check if the global ratelimit is blocking the request
-    match conn_ctx.global_ratelimit() {
-        PipelineResponse::StopProcessing(resp) => return resp,
-        _ => {}
+    if let PipelineResponse::StopProcessing(resp) = global_ratelimit_resp {
+        return resp;
     }
 
     // acme challenge
@@ -65,14 +65,13 @@ pub async fn handler(
 
         let token = req.uri().path().replace("/.well-known/acme-challenge/", "");
 
-        match well_known_handler(token) {
-            PipelineResponse::StopProcessing(resp) => return resp,
-            _ => {}
-        };
+        if let PipelineResponse::StopProcessing(resp) = well_known_handler(token) {
+            return resp;
+        }
     }
 
     // get the host from either the URI or the Host header
-    let raw_host = match req.uri().host().clone() {
+    let raw_host = match req.uri().host() {
         Some(t) => t.to_string(),
         None => {
             if !conn_ctx.http2 {
@@ -126,7 +125,7 @@ pub async fn handler(
         ip: conn_ctx.ip.clone(),
         // the domain data
         domain: {
-            match get_host_db(&host) {
+            match get_host_db(host) {
                 Some(t) => t,
                 None => return domain_not_found(),
             }

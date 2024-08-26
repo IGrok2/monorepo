@@ -2,7 +2,7 @@ use crate::buckets::models::PublicBucket;
 use crate::handler::cgi::crypto::ParsedChallengeResponse;
 use crate::handler::models::ConnectionContext;
 use crate::handler::pipeline::human_engine::cookie::ChallengeCookie;
-use crate::ip::models::{Token, TrafficType};
+use crate::ip::models::{Token, NewTrafficType};
 use crate::models::request_context::RequestContext;
 use crate::templates::error::internal_error;
 use crate::templates::invalid::invalid;
@@ -36,22 +36,20 @@ impl RequestContext {
 
                     // TODO: cgi path analytics
 
-                    let new_body = match {
-                        timeout(Duration::from_secs(2), async move {
-                            payload
-                                .map_frame(|frame| {
-                                    if let Some(data) = frame.data_ref() {
-                                        if data.len() > 2048 {
-                                            return Frame::data(Bytes::new());
-                                        }
+                    let new_body = match timeout(Duration::from_secs(2), async move {
+                        payload
+                            .map_frame(|frame| {
+                                if let Some(data) = frame.data_ref() {
+                                    if data.len() > 2048 {
+                                        return Frame::data(Bytes::new());
                                     }
-                                    frame
-                                })
-                                .collect()
-                                .await
-                        })
-                        .await
-                    } {
+                                }
+                                frame
+                            })
+                            .collect()
+                            .await
+                    })
+                    .await {
                         Ok(t) => match t {
                             Ok(v) => v,
                             Err(_e) => return invalid("too big"),
@@ -80,9 +78,9 @@ impl RequestContext {
                             response.epoch
                         );
                         if epoch() - 10 <= response.epoch {
-                            let tls_fingerprint = self.connection_context.fingerprint.clone();
+                            let tls_fingerprint = self.connection_context.fingerprint;
 
-                            if let Some(fingerprint) = tls_fingerprint.clone() {
+                            if let Some(fingerprint) = tls_fingerprint {
                                 let browser_matched = match fingerprint {
                                     TlsFingerprint::Firefox => {
                                         GA.cgi.challenge_firefox.inc();
@@ -121,11 +119,11 @@ impl RequestContext {
                                         GA.cgi.challenge_fixed_memory_set.inc();
                                     }
 
-                                    if self.ip.allow(TrafficType::NewToken) {
+                                    if self.ip.allow(NewTrafficType::Token) {
                                         // now, add the token
                                         self.ip.add_token(Token {
                                             user_agent: self.user_agent.clone(),
-                                            fingerprint: tls_fingerprint.clone().unwrap(),
+                                            fingerprint: tls_fingerprint.unwrap(),
                                             points: Counter::new(),
                                         });
 
@@ -134,7 +132,7 @@ impl RequestContext {
                                         return resp("hello human", Some(StatusCode::OK), true);
                                     }
 
-                                    /*
+                                    /* no longer using cookies
                                                                        let cookie = ChallengeCookie {
                                                                            ip: self.ip.ip.clone(),
                                                                            exp: epoch() + 86400,

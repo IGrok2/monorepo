@@ -108,7 +108,7 @@ impl CacheWriter {
             domain.domain.clone(),
             uri.replace("https://", "")
                 .replace("http://", "")
-                .replace("/", "#")
+                .replace('/', "#")
         );
 
         let mut lock = domain.caching_settings.bucket.allocations.write().await;

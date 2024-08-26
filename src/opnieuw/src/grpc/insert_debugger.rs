@@ -12,6 +12,7 @@ use crate::DOMAINS_DB;
 use dashmap::DashMap;
 use std::sync::Arc;
 
+#[allow(clippy::too_many_arguments)]
 pub async fn insert_debugger(
     key: String,
     raw_domain: Arc<DomainContext>,

@@ -22,7 +22,7 @@ pub fn get_open_proxies() -> Vec<Ipv4Addr> {
         .read_to_string(&mut data)
         .expect("couldn't read file to string");
 
-    let new_data = data.split("\n");
+    let new_data = data.split('\n');
 
     for i in new_data {
         // when we have it in port notation

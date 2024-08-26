@@ -95,7 +95,7 @@ impl BigBaller for FortyTwo {
 
         if let Some(domain) = DOMAINS_DB.get(&req.domain) {
             //let domain = domain.value().clone();
-            if req.origin_settings.len() > 0 {
+            if !req.origin_settings.is_empty() {
                 match RpcToRust::origin_settings(req.origin_settings, Some(domain.origin.clone())) {
                     Ok(v) => origin_settings = Some(v),
                     Err(e) => return fail(&e),

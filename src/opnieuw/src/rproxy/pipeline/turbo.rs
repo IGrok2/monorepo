@@ -12,15 +12,10 @@ impl RequestContext {
         headers: &mut HeaderMap,
     ) -> HeartInsertable {
         // if it's disabled, we can't activate it
-        if !self.domain.human_engine_settings.turbo_mode_enabled {
+        // also, if the cookie already exists, don't have them redo it
+        if !self.domain.human_engine_settings.turbo_mode_enabled || matches!(self.token_tester_internal(), CookieTester::Good) {
             return HeartInsertable::No;
         }
-
-        // now, let's check if the cookie already exists
-        match self.token_tester_internal() {
-            CookieTester::Good => return HeartInsertable::No,
-            _ => {}
-        };
 
         // now, if it is enabled, let's make sure it's the right content type
         if let Some(t) = response.headers().get("content-type") {

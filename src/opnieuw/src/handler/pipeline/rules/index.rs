@@ -9,7 +9,7 @@ use crate::models::pipeline_response::PipelineResponse;
 use crate::models::request_context::{PipelineData, RequestContext};
 
 impl RequestContext {
-    pub fn rules(&self, _data: &Vec<PipelineData>) -> PipelineResponse {
+    pub fn rules(&self, _data: &[PipelineData]) -> PipelineResponse {
         if !self.domain.rules.is_enabled || self.domain.rules.rules.is_empty() {
             return PipelineResponse::Ok(None);
         }
@@ -48,32 +48,32 @@ impl RequestContext {
                 // see if this trigger "matches"
                 match &n.trigger {
                     TriggerType::Ip(t) => {
-                        if pure_string(&self.ip.ip, &t, &n.m_type) {
+                        if pure_string(&self.ip.ip, t, &n.m_type) {
                             matches = true
                         }
                     }
                     TriggerType::Path(t) => {
-                        if pure_string(&self.req.uri.path(), &t, &n.m_type) {
+                        if pure_string(self.req.uri.path(), t, &n.m_type) {
                             matches = true
                         }
                     }
                     TriggerType::Country(t) => {
-                        if pure_string(&self.get_ipdata().0, &t, &n.m_type) {
+                        if pure_string(&self.get_ipdata().0, t, &n.m_type) {
                             matches = true
                         }
                     }
                     TriggerType::Continent(t) => {
-                        if pure_string(&self.get_ipdata().1, &t, &n.m_type) {
+                        if pure_string(&self.get_ipdata().1, t, &n.m_type) {
                             matches = true
                         }
                     }
                     TriggerType::Asn(t) => {
-                        if pure_string(&self.get_ipdata().2, &t, &n.m_type) {
+                        if pure_string(&self.get_ipdata().2, t, &n.m_type) {
                             matches = true
                         }
                     }
                     TriggerType::Host(t) => {
-                        if pure_string(&self.full_host, &t, &n.m_type) {
+                        if pure_string(&self.full_host, t, &n.m_type) {
                             matches = true
                         }
                     }
@@ -84,7 +84,7 @@ impl RequestContext {
                         }
                     }
                     TriggerType::UserAgent(t) => {
-                        if pure_string(&self.user_agent, &t, &n.m_type) {
+                        if pure_string(&self.user_agent, t, &n.m_type) {
                             matches = true
                         }
                     }
@@ -93,7 +93,7 @@ impl RequestContext {
                         if let Some(cookies) = self.get_cookies() {
                             for cookie in cookies.iter() {
                                 // the amount of cookies is being checked by request inspection
-                                if &cookie[0] == &t {
+                                if cookie[0] == t {
                                     matches = true;
                                     break;
                                 }
@@ -106,7 +106,7 @@ impl RequestContext {
                             false => "http",
                         };
 
-                        if pure_string(proto, &t, &n.m_type) {
+                        if pure_string(proto, t, &n.m_type) {
                             matches = true
                         }
                     }
@@ -197,8 +197,8 @@ impl RequestContext {
             // increment the analytics
             i.analytic.inc();
 
-            match do_action(self, &i.action) {
-                Some(t) => match t {
+            if let Some(pipeline_response) = do_action(self, &i.action) {
+                match pipeline_response {
                     PipelineResponse::Ok(Some(data)) => {
                         if let Some(mut t) = pipeline_data.clone() {
                             t.extend(data)
@@ -206,9 +206,8 @@ impl RequestContext {
                             pipeline_data = Some(data)
                         }
                     }
-                    _ => return t,
-                },
-                None => {}
+                    _ => return pipeline_response,
+                }
             }
         }
 

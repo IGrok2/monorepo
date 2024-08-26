@@ -51,11 +51,11 @@ pub struct IpData {
     pub continent: String,
 }
 
-pub enum TrafficType {
+pub enum NewTrafficType {
     // The request type is for a new stream
-    NewStream,
+    Stream,
     // The request type is for a new request
-    NewRequest,
+    Request,
     // The request type is for a new token
-    NewToken,
+    Token,
 }

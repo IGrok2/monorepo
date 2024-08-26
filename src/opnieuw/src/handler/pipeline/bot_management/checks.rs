@@ -8,11 +8,11 @@ impl RequestContext {
     pub fn is_bot(&self) -> IsBotResponse {
         for i in self.domain.bot_settings.bots_allowed.iter() {
             // TODO: this shouldn't be done here! there should be another function that does this
-            match crate::BOTS.read().get(&i) {
+            match crate::BOTS.read().get(i) {
                 Some(t) => {
                     for ip in t.0.iter() {
                         if ip == &self.ip.ip && self.user_agent == t.1 {
-                            return if is_rl_allowed(i.clone(), &self) {
+                            return if is_rl_allowed(i.clone(), self) {
                                 GA.handler.b.bot.inc();
 
                                 IsBotResponse::Bot

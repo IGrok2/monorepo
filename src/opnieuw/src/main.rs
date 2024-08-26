@@ -13,7 +13,7 @@ use crate::grpc::server::start_grpc;
 use crate::handler::index::{handler, handler_middleware};
 use crate::handler::models::ConnectionContext;
 use crate::handler::pipeline::bot_management::models::Bots;
-use crate::ip::models::{TrafficType, IP};
+use crate::ip::models::{NewTrafficType, IP};
 use crate::ip_data::open_proxies::get_open_proxies;
 use crate::models::domain_context::DomainContext;
 use crate::models::regions::Region;
@@ -222,7 +222,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 // `hyper::rt` IO traits.
                 let io = TokioIo::new(stream);
 
-                if ip.allow(TrafficType::NewStream) {
+                if ip.allow(NewTrafficType::Stream) {
                     // Spawn a tokio task to serve multiple connections concurrently
                     tokio::task::spawn(async move {
                         let counter = Arc::new(Counter::new());
@@ -291,113 +291,110 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             let ip = IP::get(addr.ip().to_string().split(':').collect::<Vec<&str>>()[0]);
 
             // check if the ip is allowed to make a new request
-            if ip.allow(TrafficType::NewStream) {
+            if ip.allow(NewTrafficType::Stream) {
                 let rustls = rustls.clone();
-                let mut handle = None;
 
-                {
-                    let ip = ip.clone();
+                let passed_ip = ip.clone();
 
-                    // Spawn a tokio task to serve multiple connections concurrently
-                    handle = Some(tokio::task::spawn(async move {
-                        let io = TlsStreamWrapper::new(stream, ip.ip.clone());
+                // Spawn a tokio task to serve multiple connections concurrently
+                let handle = tokio::task::spawn(async move {
+                    let io = TlsStreamWrapper::new(stream, passed_ip.ip.clone());
 
-                        match rustls.accept(io).await {
-                            Ok(acceptor) => {
-                                let http2 = if let Some(protos) = acceptor.get_ref().1.alpn_protocol() {
-                                    protos.windows(2).any(|window| window == b"h2")
-                                } else {
-                                    false
-                                };
+                    match rustls.accept(io).await {
+                        Ok(acceptor) => {
+                            let http2 = if let Some(protos) = acceptor.get_ref().1.alpn_protocol() {
+                                protos.windows(2).any(|window| window == b"h2")
+                            } else {
+                                false
+                            };
 
-                                let fingerprint = acceptor.get_ref().0.parse_client_hello();
-                                let counter = Arc::new(Counter::new());
+                            let fingerprint = acceptor.get_ref().0.parse_client_hello();
+                            let counter = Arc::new(Counter::new());
 
-                                match http2 {
-                                    true => {
-                                        // HTTP2 connection
-                                        // create a counter for the number of concurrent requests come as a result
-                                        // of this connection
+                            match http2 {
+                                true => {
+                                    // HTTP2 connection
+                                    // create a counter for the number of concurrent requests come as a result
+                                    // of this connection
 
-                                        let _ = http2::Builder::new(TokioExecutor::new())
-                                            .max_pending_accept_reset_streams(5)
-                                            .clone()
-                                            .max_local_error_reset_streams(512)
-                                            .max_concurrent_streams(50)
-                                            .keep_alive_interval(None)
-                                            //.keep_alive_timeout(Duration::from_secs(2))
-                                            .max_header_list_size(8_000_000) // 8MB max
-                                            .serve_connection(
-                                                TokioIo::new(acceptor),
-                                                service_fn(move |req| {
-                                                    debug!("http2 request: {:?}", req.uri());
+                                    let _ = http2::Builder::new(TokioExecutor::new())
+                                        .max_pending_accept_reset_streams(5)
+                                        .clone()
+                                        .max_local_error_reset_streams(512)
+                                        .max_concurrent_streams(50)
+                                        .keep_alive_interval(None)
+                                        //.keep_alive_timeout(Duration::from_secs(2))
+                                        .max_header_list_size(8_000_000) // 8MB max
+                                        .serve_connection(
+                                            TokioIo::new(acceptor),
+                                            service_fn(move |req| {
+                                                debug!("http2 request: {:?}", req.uri());
 
-                                                    let ip = Arc::clone(&ip);
+                                                let ip = Arc::clone(&passed_ip);
 
-                                                    let counter_clone = Arc::clone(&counter);
+                                                let counter_clone = Arc::clone(&counter);
 
-                                                    counter_clone.inc();
+                                                counter_clone.inc();
 
-                                                    async move {
-                                                        handler_middleware(
-                                                            req,
-                                                            ConnectionContext {
-                                                                fingerprint,
-                                                                http2_counter: counter_clone,
-                                                                http2: true,
-                                                                https: true,
-                                                                ip,
-                                                            },
-                                                        )
-                                                            .await
-                                                    }
-                                                }),
-                                            )
-                                            .await;
-                                    }
-                                    false => {
-                                        // HTTP1 connection
-                                        let _ = http1::Builder::new()
-                                            .keep_alive(false)
-                                            //.header_read_timeout(Duration::from_secs(2))
-                                            .serve_connection(
-                                                TokioIo::new(acceptor),
-                                                service_fn(move |req| {
-                                                    let fingerprint_clone = fingerprint;
-                                                    let ip = Arc::clone(&ip);
+                                                async move {
+                                                    handler_middleware(
+                                                        req,
+                                                        ConnectionContext {
+                                                            fingerprint,
+                                                            http2_counter: counter_clone,
+                                                            http2: true,
+                                                            https: true,
+                                                            ip,
+                                                        },
+                                                    )
+                                                        .await
+                                                }
+                                            }),
+                                        )
+                                        .await;
+                                }
+                                false => {
+                                    // HTTP1 connection
+                                    let _ = http1::Builder::new()
+                                        .keep_alive(false)
+                                        //.header_read_timeout(Duration::from_secs(2))
+                                        .serve_connection(
+                                            TokioIo::new(acceptor),
+                                            service_fn(move |req| {
+                                                let _fingerprint_clone = fingerprint;
+                                                let ip = Arc::clone(&passed_ip);
 
-                                                    let counter_clone = Arc::clone(&counter);
+                                                let counter_clone = Arc::clone(&counter);
 
-                                                    counter_clone.inc();
+                                                counter_clone.inc();
 
-                                                    async move {
-                                                        handler_middleware(
-                                                            req,
-                                                            ConnectionContext {
-                                                                fingerprint,
-                                                                http2_counter: counter_clone,
-                                                                http2: false,
-                                                                https: true,
-                                                                ip,
-                                                            },
-                                                        )
-                                                            .await
-                                                    }
-                                                }),
-                                            )
-                                            .await;
-                                    }
+                                                async move {
+                                                    handler_middleware(
+                                                        req,
+                                                        ConnectionContext {
+                                                            fingerprint,
+                                                            http2_counter: counter_clone,
+                                                            http2: false,
+                                                            https: true,
+                                                            ip,
+                                                        },
+                                                    )
+                                                        .await
+                                                }
+                                            }),
+                                        )
+                                        .await;
                                 }
                             }
-                            Err(e) => {
-                                internal_error(&format!("Error accepting connection: {:?}", e));
-                            }
                         }
-                    }));
-                }
+                        Err(e) => {
+                            internal_error(&format!("Error accepting connection: {:?}", e));
+                        }
+                    }
+                });
 
                 // add the handle to the list of active handles
-                ip.add_handle(handle.unwrap().abort_handle());
+                ip.add_handle(handle.abort_handle());
             }
         }
     }

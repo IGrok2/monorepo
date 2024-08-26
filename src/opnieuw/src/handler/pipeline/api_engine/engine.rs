@@ -74,7 +74,7 @@ impl RequestContext {
 
         if setting.is_none() && !ws {
             // there's no available setting and it's not a websocket connection, let it fly!
-            if self.domain.api_engine_settings.strict_mode && self.req.method != &Method::GET {
+            if self.domain.api_engine_settings.strict_mode && self.req.method != Method::GET {
                 // it was a request other than a GET but wasn't for the api engine
                 use std::ops::DerefMut;
                 if let Some(ref mut t) = self.by_example.borrow_mut().deref_mut() {
@@ -151,7 +151,7 @@ impl RequestContext {
 
         for i in setting.rules.iter() {
             // the rules applicable to this paths that begin with the proper one
-            if matches(&self, i) {
+            if matches(self, i) {
                 // check if its the right path
                 i.hit.inc();
 
@@ -202,7 +202,7 @@ impl RequestContext {
                         // it's a websocket and it's been allowed
                         let mut bucket = None;
 
-                        match self.do_action(&i, &setting) {
+                        match self.do_action(i, setting) {
                             PipelineResponse::Ok(_) => {}
                             PipelineResponse::SkipPipeline(pipelines, data) => {
                                 return PipelineResponse::SkipPipeline(pipelines, data)
@@ -263,7 +263,7 @@ impl RequestContext {
                         };
                     }
                 } else {
-                    return self.do_action(i, &setting);
+                    return self.do_action(i, setting);
                 }
             }
         }

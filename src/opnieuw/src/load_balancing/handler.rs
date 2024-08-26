@@ -10,6 +10,7 @@ use std::sync::Arc;
 use url::Url;
 
 impl RequestContext {
+    #[allow(clippy::type_complexity)]
     fn choose_setting(
         &self,
         data: &[PipelineData],
@@ -60,30 +61,28 @@ impl RequestContext {
         }
     }
 
+    #[allow(clippy::type_complexity)]
     pub fn choose_backend(
         &self,
         data: &[PipelineData],
     ) -> Option<(Arc<OriginSetting>, (Url, Option<String>))> {
         if let Some(app) = &self.domain.app_settings {
             self.choose_app_middleware(app)
-        } else {
-            if let Ok(Some(data)) = self.choose_setting(data) {
-                if let Some(app) = data.1 {
-                    self.choose_app_middleware(&app)
-                } else {
-                    if let Some(origin) = data.0.origins.choose(&mut rand::thread_rng()) {
-                        Some((data.0.clone(), (origin.0.clone(), origin.1 .1.clone())))
-                    } else {
-                        None
-                    }
-                }
+        } else if let Ok(Some(data)) = self.choose_setting(data) {
+            if let Some(app) = data.1 {
+                self.choose_app_middleware(&app)
+            } else if let Some(origin) = data.0.origins.choose(&mut rand::thread_rng()) {
+                Some((data.0.clone(), (origin.0.clone(), origin.1 .1.clone())))
             } else {
                 None
             }
+        } else {
+            None
         }
     }
 
     // middleware to convert app_backend to origin_setting
+    #[allow(clippy::type_complexity)]
     fn choose_app_middleware(
         &self,
         settings: &AppSettings,
@@ -103,6 +102,7 @@ impl RequestContext {
     }
 
     // takes in the vector of app origins (with region) and calculates which is closest to current region
+    #[allow(clippy::type_complexity)]
     fn choose_app_backend(
         settings: &AppSettings,
     ) -> Option<(AppSettings, (Region, (Counter, (Url, String))))> {

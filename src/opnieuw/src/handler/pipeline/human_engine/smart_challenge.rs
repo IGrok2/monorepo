@@ -23,7 +23,7 @@ impl RequestContext {
             if let Some(t) = ChallengeCookie::get_cookie(&cookie) {
                 if t.ip == self.ip.ip && t.website == self.domain.domain && t.ua == self.user_agent
                 {
-                    if let Some(v) = self.connection_context.fingerprint.clone() {
+                    if let Some(v) = self.connection_context.fingerprint {
                         if v != t.tls_fingerprint {
                             GA.cookie.cookie_misused.inc();
 
@@ -65,7 +65,7 @@ impl RequestContext {
 
         for token in read.tokens.iter() {
             if token.0.user_agent == self.user_agent {
-                if let Some(t) = self.connection_context.fingerprint.clone() {
+                if let Some(t) = self.connection_context.fingerprint {
                     match token.0.fingerprint {
                         TlsFingerprint::Chrome => match t {
                             TlsFingerprint::Chrome => {}

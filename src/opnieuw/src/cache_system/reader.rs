@@ -31,7 +31,7 @@ use tokio::{select, task};
 use crate::templates::error::internal_error;
 
 impl CacheReader {
-    pub fn new<'a>(object: &Arc<CachedObject>, turbo_mode: bool) -> Option<Self> {
+    pub fn new(object: &Arc<CachedObject>, turbo_mode: bool) -> Option<Self> {
         let std_file = match std::fs::File::open(&object.location) {
             Ok(t) => t,
             Err(e) => {
@@ -133,7 +133,7 @@ impl hyper::body::Body for CacheReader {
         }
 
         // elsewise give it to them straight
-        if read_buf.filled().len() == 0 {
+        if read_buf.filled().is_empty() {
             return Poll::Ready(None);
         }
 

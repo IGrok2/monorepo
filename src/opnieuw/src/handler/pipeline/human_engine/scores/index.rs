@@ -37,21 +37,21 @@ impl RequestContext {
         debug!("starting human engine pipeline");
 
         for i in PIPELINE.iter() {
-            let mut foo = i(&self);
+            let mut step_score = i(self);
 
-            debug!("human engine pipeline: {}", foo);
+            debug!("human engine pipeline: {}", step_score);
 
             match self.domain.human_engine_settings.mode {
                 HumanEngineMode::Chill => {
-                    foo = (foo as f32 * 0.3) as u32;
+                    step_score = (step_score as f32 * 0.3) as u32;
                 }
                 HumanEngineMode::Standard => {}
                 HumanEngineMode::LudicrousBotMitigation => {
-                    foo = foo * 2;
+                    step_score *= 2;
                 }
             }
 
-            score += foo;
+            score += step_score;
 
             if score >= 100 {
                 // we're done enough already

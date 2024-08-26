@@ -71,7 +71,7 @@ pub async fn call_backend(
     let mut req = Builder::new()
         .method(ctx.req.method.clone())
         .uri(new_url.as_str())
-        .version(ctx.req.version.clone());
+        .version(ctx.req.version);
 
     // now that we've got the request, let's get the header map so we can add the headers
     if let Some(headers) = req.headers_mut() {
@@ -145,6 +145,7 @@ pub async fn call_backend(
     let finished_req = req.body(payload).unwrap();
 
     // then run the timeout
+    #[allow(clippy::blocks_in_conditions)]
     match domain
         .clone()
         .stream_timeout(origin.0.timeout, async move {
@@ -298,7 +299,7 @@ pub async fn call_backend(
                         t.proxy.origin_setting_ip = origin.1 .0.to_string();
                     }
 
-                    return builder
+                    builder
                         .body(
                             OutboundWrapper::new(
                                 resp.into_body(),
@@ -308,7 +309,7 @@ pub async fn call_backend(
                             )
                             .boxed(),
                         )
-                        .unwrap();
+                        .unwrap()
                 }
                 Err(e) => {
                     use std::ops::DerefMut;
@@ -318,14 +319,14 @@ pub async fn call_backend(
                         t.proxy.origin_setting_ip = origin.1 .0.to_string();
                     }
 
-                    return context.ctx.origin_down();
+                    context.ctx.origin_down()
                 }
             }
         }
         Err(e) => {
             debug!("Timeout connecting to origin: {}", e);
 
-            return context.ctx.origin_down();
+            context.ctx.origin_down()
         }
     }
 }

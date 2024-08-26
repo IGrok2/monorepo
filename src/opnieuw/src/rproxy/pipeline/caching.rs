@@ -151,9 +151,7 @@ fn check_cache_headers(headers: &HeaderMap) -> Option<((bool, Option<Duration>),
                     resp = true;
 
                     ttl = Some(Duration::from_secs(
-                        val.split(", ")
-                            .filter(|val| val.starts_with("max-age=")) // get the actual value
-                            .next()
+                        val.split(", ").find(|val| val.starts_with("max-age="))
                             .map(|max_age| {
                                 u64::from_str(max_age.trim_start_matches("max-age=")).unwrap_or(0)
                             })

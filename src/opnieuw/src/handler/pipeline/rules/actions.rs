@@ -13,7 +13,7 @@ pub fn do_action(ctx: &RequestContext, action: &Action) -> Option<PipelineRespon
 
     let mut skip_data = Vec::new();
 
-    return match action {
+    match action {
         Action::Monopoly(t) => match t {
             Monopoly::Block => {
                 GA.handler.pr.block.inc();
@@ -61,7 +61,7 @@ pub fn do_action(ctx: &RequestContext, action: &Action) -> Option<PipelineRespon
                     Trustbusting::Redirect(to) => {
                         GA.handler.pr.redirect.inc();
 
-                        return Some(PipelineResponse::StopProcessing(perform_redirect(&to)));
+                        return Some(PipelineResponse::StopProcessing(perform_redirect(to)));
                     }
                     Trustbusting::UseBackend(backend) => {
                         GA.handler.pr.use_backend.inc();
@@ -113,5 +113,5 @@ pub fn do_action(ctx: &RequestContext, action: &Action) -> Option<PipelineRespon
 
             None
         }
-    };
+    }
 }

@@ -42,7 +42,7 @@ impl RequestContext {
 
                     data.push(PipelineData {
                         cache_level: Some((
-                            t.clone(),
+                            *t,
                             duration.unwrap_or(self.domain.caching_settings.default_cache_ttl),
                         )),
                         bucket: None,
@@ -65,12 +65,10 @@ impl RequestContext {
                     Some(data),
                 )
             }
+        } else if data.is_empty() {
+            PipelineResponse::SkipPipeline(Vec::from([Pipelines::VerifiedBots]), None)
         } else {
-            if data.is_empty() {
-                PipelineResponse::SkipPipeline(Vec::from([Pipelines::VerifiedBots]), None)
-            } else {
-                PipelineResponse::SkipPipeline(Vec::from([Pipelines::VerifiedBots]), Some(data))
-            }
+            PipelineResponse::SkipPipeline(Vec::from([Pipelines::VerifiedBots]), Some(data))
         }
         // default action
     }

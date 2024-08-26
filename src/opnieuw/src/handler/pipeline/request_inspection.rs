@@ -7,7 +7,7 @@ use crate::templates::domain_not_found::domain_not_found;
 use crate::GA;
 
 impl RequestContext {
-    pub fn request_inspection(&self, _data: &Vec<PipelineData>) -> PipelineResponse {
+    pub fn request_inspection(&self, _data: &[PipelineData]) -> PipelineResponse {
         /*
         THE FOLLOWING SHOULD NOT BE IN THE USERS' CONTROL
         Malicious traffic

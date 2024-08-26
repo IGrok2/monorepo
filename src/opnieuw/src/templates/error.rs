@@ -7,5 +7,5 @@ pub fn internal_error(error: &str) -> HttpResponse {
     // TODO: some logging should be done here too, error here is included for that
     GA.template.internal_error.inc();
     sentry::capture_message(error, Level::Error);
-    return global_ratelimit_template(); // TODO internal error template
+    global_ratelimit_template()// TODO internal error template
 }

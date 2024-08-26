@@ -18,7 +18,7 @@ impl RequestContext {
             multiplier += (self.domain.analytic.passed_human_engine.get()
                 / self.domain.internal_settings.expected_passed as i64)
                 as u32
-                / 2 as u32;
+                / 2_u32;
         }
 
         if self.domain.analytic.turbo_mode_served.get() > 100

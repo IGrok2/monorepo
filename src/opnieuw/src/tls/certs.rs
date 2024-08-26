@@ -15,18 +15,10 @@ impl ResolvesServerCert for CertResolver {
                     let lock = WILDCARD_CERT.read().unwrap();
 
                     // return
-                    return match lock.as_ref() {
-                        Some(t) => Some(t.clone()),
-                        None => None,
-                    };
+                    return lock.as_ref().map(|t| t.clone());
                 }
 
-                match CERTS.get(t) {
-                    Some(t) => {
-                        Some(t.clone()) // Arc clones are very lightweight
-                    }
-                    None => None,
-                }
+                CERTS.get(t).map(|t| t.clone())
             }
             None => None,
         };

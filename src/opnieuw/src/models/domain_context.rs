@@ -67,6 +67,7 @@ pub struct AppSettings {
 
     // vector of regions. first is region the app is in, second is the counter
     // third is the machine ip, fourth is the machine host
+    #[allow(clippy::type_complexity)]
     pub origins: Vec<(Region, (Counter, (Url, String)))>,
 
     // then, we have origin settings with an empty vector
@@ -75,6 +76,7 @@ pub struct AppSettings {
 
 #[derive(Clone, Debug)]
 pub struct OriginSetting {
+    #[allow(clippy::type_complexity)]
     pub origins: Vec<(Url, ((u8, Counter), Option<String>))>, // vector of origins and their respective weights along with pretend host if any should be used (this is how subdomains are connected)
     // TODO: let people choose origins by region
     // pub base_url: String, // we need this for websocket connections, because we are effectively 'combining' strings

@@ -44,7 +44,9 @@ impl PublicBucket {
     pub fn new(name: String, id: String, threshold: u32, timeout: u32, check: bool) -> Arc<Self> {
         GA.bucket.public.new.inc();
 
-        let bucket = Arc::new(PublicBucket {
+        
+
+        Arc::new(PublicBucket {
             bucket: Arc::new(Bucket {
                 name,
                 passed: Default::default(),
@@ -55,9 +57,7 @@ impl PublicBucket {
                 check,
                 ips: DashMap::new(),
             }),
-        });
-
-        bucket
+        })
     }
 
     pub fn check_ip(&self, ip: &Arc<IP>) -> bool {

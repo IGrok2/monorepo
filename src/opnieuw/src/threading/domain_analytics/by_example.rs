@@ -104,36 +104,36 @@ impl DomainContext {
                             fingerprint: format!("{:?}", val.general.fingerprint),
                             referrer: format!("{:?}", val.general.referrer),
                             // api engine
-                            api_hit: val.api_engine.done.clone(),
+                            api_hit: val.api_engine.done,
                             setting: val.api_engine.setting.clone(),
                             rule: val.api_engine.rule.clone(),
                             actions: val.api_engine.actions.clone(),
                             // bot management
-                            bm_allowed: val.bot_management.allowed.clone(),
+                            bm_allowed: val.bot_management.allowed,
                             // caching
-                            caching_hit: val.caching.hit.clone(),
-                            encoded: val.caching.encoded.clone(),
-                            cache_bytes_written: val.caching.bytes_written.clone(),
+                            caching_hit: val.caching.hit,
+                            encoded: val.caching.encoded,
+                            cache_bytes_written: val.caching.bytes_written,
                             // human engine
-                            he_hit: val.human_engine.hit.clone(),
-                            threat_score: val.human_engine.threat_score.clone(),
-                            smart_challenge_served: val.human_engine.smart_challenge_served.clone(),
-                            turbo_mode_served: val.human_engine.turbo_mode_served.clone(),
-                            cookie_validated: val.human_engine.cookie_validated.clone(),
+                            he_hit: val.human_engine.hit,
+                            threat_score: val.human_engine.threat_score,
+                            smart_challenge_served: val.human_engine.smart_challenge_served,
+                            turbo_mode_served: val.human_engine.turbo_mode_served,
+                            cookie_validated: val.human_engine.cookie_validated,
                             // page rules
-                            pr_hit: val.rules.hit.clone(),
+                            pr_hit: val.rules.hit,
                             rule_ids: val.rules.rule_ids.clone(),
                             action: val.rules.action.clone(),
                             // rproxy
-                            rproxy_hit: val.proxy.hit.clone(),
+                            rproxy_hit: val.proxy.hit,
                             errored: format!("{:?}", val.proxy.errored.clone()),
                             response_code: format!("{:?}", val.proxy.response_code.clone()),
                             origin_setting_ip: val.proxy.origin_setting_ip.clone(),
-                            rproxy_bytes_written: val.proxy.bytes_written.clone(),
+                            rproxy_bytes_written: val.proxy.bytes_written,
                             // domain stats
-                            domain_traffic: val.domain_stats.domain_traffic.clone() as u32,
-                            open_conns: val.domain_stats.open_conns.clone() as u32,
-                            cache_store: val.domain_stats.cache_store.clone() as u32,
+                            domain_traffic: val.domain_stats.domain_traffic as u32,
+                            open_conns: val.domain_stats.open_conns as u32,
+                            cache_store: val.domain_stats.cache_store as u32,
                         }),
                     )
                     .await;

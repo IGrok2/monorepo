@@ -29,7 +29,7 @@ pub fn get_ip_data() -> Vec<IPAsnCountry> {
         .read_to_string(&mut data)
         .expect("couldn't read file to string");
 
-    let new_data = data.split("\n");
+    let new_data = data.split('\n');
 
     let mut data = vec![]; // shadow previous data value
 
@@ -38,18 +38,15 @@ pub fn get_ip_data() -> Vec<IPAsnCountry> {
             Ok(t) => t,
             Err(_) => break,
         };
-        match Ipv4Addr::from_str(&json.start_ip) {
-            Ok(t) => {
-                data.push(IPAsnCountry {
-                    starting_ip: t,
-                    ending_ip: Ipv4Addr::from_str(&json.end_ip).unwrap(), // this really shouldn't cause an error
-                    asn: json.asn,
-                    continent: json.continent,
-                    country: json.country,
-                    hits: Counter::new(),
-                })
-            }
-            Err(_) => {} // skip it, likely ipv6
+        if let Ok(starting_ip) = Ipv4Addr::from_str(&json.start_ip) {
+            data.push(IPAsnCountry {
+                starting_ip,
+                ending_ip: Ipv4Addr::from_str(&json.end_ip).unwrap(), // this really shouldn't cause an error
+                asn: json.asn,
+                continent: json.continent,
+                country: json.country,
+                hits: Counter::new(),
+            })
         }
     }
 

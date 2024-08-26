@@ -79,7 +79,7 @@ fn ban_ips(ips: Vec<Arc<IP>>) -> bool {
         to_ban = to_ban + &format!("{}\n", i.ip);
     }
 
-    if to_ban != "".to_string() {
+    if to_ban != *"" {
         if let Ok(mut stream) = UnixStream::connect("/tmp/banner") {
             stream.write_all(to_ban.as_bytes()).unwrap();
 
