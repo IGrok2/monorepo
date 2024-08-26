@@ -1,7 +1,22 @@
-use crate::handler::pipeline::api_engine::models::{Action, Method, Rule, Setting};
-use crate::models::pipeline_response::{PipelineResponse, Pipelines};
-use crate::models::request_context::{PipelineData, RequestContext};
-use crate::GA;
+use crate::{
+    handler::pipeline::api_engine::models::{
+        Action,
+        Method,
+        Rule,
+        Setting,
+    },
+    models::{
+        pipeline_response::{
+            PipelineResponse,
+            Pipelines,
+        },
+        request_context::{
+            PipelineData,
+            RequestContext,
+        },
+    },
+    GA,
+};
 
 // TODO: inspect
 impl RequestContext {

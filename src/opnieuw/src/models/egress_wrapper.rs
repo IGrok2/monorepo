@@ -1,5 +1,7 @@
-use crate::models::domain_context::DomainContext;
-use crate::models::request_context::RequestContext;
+use crate::models::{
+    domain_context::DomainContext,
+    request_context::RequestContext,
+};
 use std::sync::Arc;
 
 pub struct EgressWrapper {

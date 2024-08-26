@@ -1,9 +1,13 @@
-use crate::buckets::models::PublicBucket;
-use crate::handler::pipeline::human_engine::cookie::ChallengeCookie;
-use crate::models::pipeline_response::PipelineResponse;
-use crate::models::request_context::RequestContext;
-use crate::tls::models::TlsFingerprint;
-use crate::GA;
+use crate::{
+    buckets::models::PublicBucket,
+    handler::pipeline::human_engine::cookie::ChallengeCookie,
+    models::{
+        pipeline_response::PipelineResponse,
+        request_context::RequestContext,
+    },
+    tls::models::TlsFingerprint,
+    GA,
+};
 use bytes::Bytes;
 
 // for tokens

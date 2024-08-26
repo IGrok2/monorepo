@@ -1,12 +1,29 @@
-use crate::handler::pipeline::api_engine::check::matches;
-use crate::handler::pipeline::api_engine::models;
-use crate::handler::pipeline::api_engine::models::{Action, WhitelistFactors};
-use crate::handler::pipeline::human_engine::smart_challenge::CookieTester;
-use crate::GA;
+use crate::{
+    handler::pipeline::{
+        api_engine::{
+            check::matches,
+            models,
+            models::{
+                Action,
+                WhitelistFactors,
+            },
+        },
+        human_engine::smart_challenge::CookieTester,
+    },
+    GA,
+};
 use hyper::Method;
 
-use crate::models::pipeline_response::{PipelineResponse, Pipelines};
-use crate::models::request_context::{PipelineData, RequestContext};
+use crate::models::{
+    pipeline_response::{
+        PipelineResponse,
+        Pipelines,
+    },
+    request_context::{
+        PipelineData,
+        RequestContext,
+    },
+};
 
 // This is the main handler of the data
 

@@ -1,4 +1,10 @@
-use crate::{HttpResponse, BACKGROUND_CHALLENGE, CHALLENGE_KEYS, GA, SMART_CHALLENGE};
+use crate::{
+    HttpResponse,
+    BACKGROUND_CHALLENGE,
+    CHALLENGE_KEYS,
+    GA,
+    SMART_CHALLENGE,
+};
 use hyper::StatusCode;
 use std::ops::Deref;
 

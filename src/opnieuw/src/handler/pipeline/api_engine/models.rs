@@ -23,11 +23,15 @@ it can't be as strict as allow and deny for EVERY path with no methods
 perhaps methods are part of a more general rule, while exact paths just have to be listed?
  */
 
-use crate::buckets::models::PublicBucket;
-use crate::handler::pipeline::caching::models::CacheLevel;
-use crate::utils::counter::Counter;
-use std::sync::Arc;
-use std::time::Duration;
+use crate::{
+    buckets::models::PublicBucket,
+    handler::pipeline::caching::models::CacheLevel,
+    utils::counter::Counter,
+};
+use std::{
+    sync::Arc,
+    time::Duration,
+};
 
 #[derive(Clone, Debug)]
 pub struct ApiEngineSettings {

@@ -1,8 +1,14 @@
-use crate::tls::models::TlsFingerprint;
-use crate::utils::counter::Counter;
-use crate::utils::cycle::Cycle;
-use std::net::Ipv4Addr;
-use std::sync::RwLock;
+use crate::{
+    tls::models::TlsFingerprint,
+    utils::{
+        counter::Counter,
+        cycle::Cycle,
+    },
+};
+use std::{
+    net::Ipv4Addr,
+    sync::RwLock,
+};
 
 #[derive(Debug)]
 pub struct IP {

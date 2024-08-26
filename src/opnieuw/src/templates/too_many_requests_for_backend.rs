@@ -1,5 +1,8 @@
-use crate::models::request_context::RequestContext;
-use crate::{HttpResponse, GA};
+use crate::{
+    models::request_context::RequestContext,
+    HttpResponse,
+    GA,
+};
 use hyper::StatusCode;
 
 use crate::utils::resp::resp;

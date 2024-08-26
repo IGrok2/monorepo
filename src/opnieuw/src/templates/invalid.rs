@@ -1,4 +1,8 @@
-use crate::{debug, HttpResponse, GA};
+use crate::{
+    debug,
+    HttpResponse,
+    GA,
+};
 use hyper::StatusCode;
 
 use crate::utils::resp::resp;

@@ -1,5 +1,7 @@
-use crate::debug;
-use crate::models::domain_context::DomainContext;
+use crate::{
+    debug,
+    models::domain_context::DomainContext,
+};
 use std::time::Instant;
 
 impl DomainContext {

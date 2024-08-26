@@ -1,10 +1,20 @@
-use crate::{HttpResponse, EGRESS_HEADERS};
-use http_body_util::combinators::BoxBody;
-use http_body_util::{BodyExt, Full};
-use hyper::body::Bytes;
-use hyper::header::HeaderValue;
-use hyper::http::response::Builder;
-use hyper::{HeaderMap, Response, StatusCode};
+use crate::{
+    HttpResponse,
+    EGRESS_HEADERS,
+};
+use http_body_util::{
+    combinators::BoxBody,
+    BodyExt,
+    Full,
+};
+use hyper::{
+    body::Bytes,
+    header::HeaderValue,
+    http::response::Builder,
+    HeaderMap,
+    Response,
+    StatusCode,
+};
 use std::convert::Infallible;
 
 pub fn resp(body: &str, status: Option<StatusCode>, no_store: bool) -> HttpResponse {

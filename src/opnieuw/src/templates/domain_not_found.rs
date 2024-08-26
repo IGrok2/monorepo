@@ -1,5 +1,8 @@
-use crate::utils::resp::resp;
-use crate::{HttpResponse, GA};
+use crate::{
+    utils::resp::resp,
+    HttpResponse,
+    GA,
+};
 use hyper::StatusCode;
 
 pub fn domain_not_found() -> HttpResponse {

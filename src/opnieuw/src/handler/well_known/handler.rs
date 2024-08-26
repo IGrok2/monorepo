@@ -1,9 +1,18 @@
-use crate::models::pipeline_response::PipelineResponse;
-use crate::{HttpResponse, CHALLENGE_RESPONSES, GA};
-use http_body_util::combinators::BoxBody;
-use http_body_util::Full;
-use hyper::body::Bytes;
-use hyper::{Response, StatusCode};
+use crate::{
+    models::pipeline_response::PipelineResponse,
+    HttpResponse,
+    CHALLENGE_RESPONSES,
+    GA,
+};
+use http_body_util::{
+    combinators::BoxBody,
+    Full,
+};
+use hyper::{
+    body::Bytes,
+    Response,
+    StatusCode,
+};
 
 use crate::utils::resp::resp;
 

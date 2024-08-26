@@ -1,5 +1,7 @@
-use crate::models::request_context::RequestContext;
-use crate::GA;
+use crate::{
+    models::request_context::RequestContext,
+    GA,
+};
 use hyper::header::HeaderValue;
 
 // TODO: have the user control this!

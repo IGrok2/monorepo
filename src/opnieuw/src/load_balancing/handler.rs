@@ -1,12 +1,26 @@
-use crate::models::domain_context::{AppSettings, OriginSetting, OriginType};
-use crate::models::regions::Region;
-use crate::models::request_context::{PipelineData, RequestContext};
-use crate::templates::error::internal_error;
-use crate::utils::counter::Counter;
-use crate::{DOMAINS_DB, REGION};
+use crate::{
+    models::{
+        domain_context::{
+            AppSettings,
+            OriginSetting,
+            OriginType,
+        },
+        regions::Region,
+        request_context::{
+            PipelineData,
+            RequestContext,
+        },
+    },
+    templates::error::internal_error,
+    utils::counter::Counter,
+    DOMAINS_DB,
+    REGION,
+};
 use rand::seq::SliceRandom;
-use std::ops::Deref;
-use std::sync::Arc;
+use std::{
+    ops::Deref,
+    sync::Arc,
+};
 use url::Url;
 
 impl RequestContext {

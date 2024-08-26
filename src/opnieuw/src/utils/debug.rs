@@ -1,34 +1,74 @@
-use crate::buckets::models::PublicBucket;
-use crate::buckets::private::PrivateBucket;
-use crate::handler::pipeline::api_engine::models::{
-    Action, ApiEngineSettings, Method, Rule, Setting, TriggerType, WsMethods,
+use crate::{
+    buckets::{
+        models::PublicBucket,
+        private::PrivateBucket,
+    },
+    handler::pipeline::{
+        api_engine::models::{
+            Action,
+            ApiEngineSettings,
+            Method,
+            Rule,
+            Setting,
+            TriggerType,
+            WsMethods,
+        },
+        bot_management::models::Bots,
+        human_engine::{
+            models::{
+                HumanEngine,
+                HumanEngineMode,
+                InternalCounters,
+            },
+            scores::failsafe::models::Failsafe,
+        },
+        rules::models::{
+            Match,
+            Trigger,
+            Trustbusting::{
+                RatelimitBucket,
+                SmartChallenge,
+            },
+        },
+    },
+    models::{
+        analytics::Analytic,
+        analytics_by_example::AnalyticsByExampleDomain,
+        domain_context::{
+            BotManagementSettings,
+            CachingSettings,
+            DomainContext,
+            InternalSettings,
+            OriginSetting,
+            OriginSettings,
+            OriginType,
+        },
+    },
+    utils::counter::Counter,
+    CERTS,
+    DOMAINS_DB,
 };
-use crate::handler::pipeline::bot_management::models::Bots;
-use crate::handler::pipeline::human_engine::models::{
-    HumanEngine, HumanEngineMode, InternalCounters,
-};
-use crate::handler::pipeline::human_engine::scores::failsafe::models::Failsafe;
-use crate::handler::pipeline::rules::models::Trustbusting::{RatelimitBucket, SmartChallenge};
-use crate::handler::pipeline::rules::models::{Match, Trigger};
-use crate::models::analytics::Analytic;
-use crate::models::analytics_by_example::AnalyticsByExampleDomain;
-use crate::models::domain_context::{
-    BotManagementSettings, CachingSettings, DomainContext, InternalSettings, OriginSetting,
-    OriginSettings, OriginType,
-};
-use crate::utils::counter::Counter;
-use crate::{CERTS, DOMAINS_DB};
 use dashmap::DashMap;
-use rustls_pemfile::{read_one, Item};
-use std::collections::HashMap;
-use std::iter;
-use std::ops::Index;
-use std::str::FromStr;
-use std::sync::Arc;
-use std::time::Duration;
+use rustls_pemfile::{
+    read_one,
+    Item,
+};
+use std::{
+    collections::HashMap,
+    iter,
+    ops::Index,
+    str::FromStr,
+    sync::Arc,
+    time::Duration,
+};
 use tokio::sync::RwLock;
-use tokio_rustls::rustls;
-use tokio_rustls::rustls::sign::{CertifiedKey, RsaSigningKey};
+use tokio_rustls::{
+    rustls,
+    rustls::sign::{
+        CertifiedKey,
+        RsaSigningKey,
+    },
+};
 
 pub fn debug_setup() {
     // For HTTPs, use Tokio - Rustls flavor

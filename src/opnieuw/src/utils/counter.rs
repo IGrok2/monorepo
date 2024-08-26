@@ -1,6 +1,12 @@
 use crate::GA;
-use std::ptr::null_mut;
-use std::sync::atomic::{AtomicI32, AtomicI64, Ordering};
+use std::{
+    ptr::null_mut,
+    sync::atomic::{
+        AtomicI32,
+        AtomicI64,
+        Ordering,
+    },
+};
 
 // our ordering for atomics
 static ORDER: Ordering = Ordering::Relaxed;

@@ -1,6 +1,16 @@
-use crate::handler::pipeline::bot_management::models::IsBotResponse;
-use crate::models::pipeline_response::{PipelineResponse, Pipelines};
-use crate::models::request_context::{PipelineData, RequestContext};
+use crate::{
+    handler::pipeline::bot_management::models::IsBotResponse,
+    models::{
+        pipeline_response::{
+            PipelineResponse,
+            Pipelines,
+        },
+        request_context::{
+            PipelineData,
+            RequestContext,
+        },
+    },
+};
 
 /* 3: Verified bots
 - Checks if user would like to allow bots we consider verified

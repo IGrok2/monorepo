@@ -1,7 +1,20 @@
-use crate::tls::models::TlsFingerprint;
-use crate::{debug, GA};
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
-use serde::{Deserialize, Serialize};
+use crate::{
+    debug,
+    tls::models::TlsFingerprint,
+    GA,
+};
+use jsonwebtoken::{
+    decode,
+    encode,
+    DecodingKey,
+    EncodingKey,
+    Header,
+    Validation,
+};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ChallengeCookie {

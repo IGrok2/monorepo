@@ -1,5 +1,8 @@
-use crate::models::request_context::RequestContext;
-use crate::{GA, PROXIES};
+use crate::{
+    models::request_context::RequestContext,
+    GA,
+    PROXIES,
+};
 
 impl RequestContext {
     pub fn check_open_proxy(&self) -> u32 {

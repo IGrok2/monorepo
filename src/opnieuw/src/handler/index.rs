@@ -1,28 +1,64 @@
-use crate::handler::models::ConnectionContext;
-use crate::handler::well_known::handler::well_known_handler;
-use crate::handler::PipelineFunction;
-use crate::models::analytics_by_example::AnalyticsByExample;
-use crate::models::pipeline_response::{PipelineResponse, Pipelines};
-use crate::models::request_context::{PipelineData, RequestContext};
-use crate::rproxy::index::reverse_proxy;
-use crate::templates::direct_ip::direct_ip_reject;
-use crate::templates::domain_not_found::domain_not_found;
-use crate::templates::error::internal_error;
-use crate::templates::global_ratelimit::global_ratelimit_template;
-use crate::utils::domains::{get_user_agent, is_domain};
-use crate::utils::get_host::{get_host, get_host_db};
-use crate::utils::redirect::perform_redirect;
-use crate::{debug, HttpResponse, CERTS, GA};
+use crate::{
+    debug,
+    handler::{
+        models::ConnectionContext,
+        well_known::handler::well_known_handler,
+        PipelineFunction,
+    },
+    models::{
+        analytics_by_example::AnalyticsByExample,
+        pipeline_response::{
+            PipelineResponse,
+            Pipelines,
+        },
+        request_context::{
+            PipelineData,
+            RequestContext,
+        },
+    },
+    rproxy::index::reverse_proxy,
+    templates::{
+        direct_ip::direct_ip_reject,
+        domain_not_found::domain_not_found,
+        error::internal_error,
+        global_ratelimit::global_ratelimit_template,
+    },
+    utils::{
+        domains::{
+            get_user_agent,
+            is_domain,
+        },
+        get_host::{
+            get_host,
+            get_host_db,
+        },
+        redirect::perform_redirect,
+    },
+    HttpResponse,
+    CERTS,
+    GA,
+};
 use anyhow::Result;
-use http_body_util::combinators::BoxBody;
-use http_body_util::{BodyExt, Full};
-use hyper::body::{Body, Bytes};
-use hyper::header::LOCATION;
-use hyper::{Request, Response};
-use std::cell::RefCell;
-use std::net::IpAddr;
-use std::rc::Rc;
-use std::sync::atomic::AtomicBool;
+use http_body_util::{
+    combinators::BoxBody,
+    BodyExt,
+    Full,
+};
+use hyper::{
+    body::{
+        Body,
+        Bytes,
+    },
+    header::LOCATION,
+    Request,
+    Response,
+};
+use std::{
+    cell::RefCell,
+    net::IpAddr,
+    rc::Rc,
+    sync::atomic::AtomicBool,
+};
 
 lazy_static!(
     // a vector of Pipeline Function & the enum of the Pipeline

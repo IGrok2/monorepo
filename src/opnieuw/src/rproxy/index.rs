@@ -1,9 +1,14 @@
-use crate::models::request_context::RequestContext;
-use crate::{HttpResponse, GA};
+use crate::{
+    models::request_context::RequestContext,
+    HttpResponse,
+    GA,
+};
 use hyper::body::Incoming;
 // use crate::handler::pipeline::api_engine::ws::handler::handle_websocket;
-use crate::models::request_context::PipelineData;
-use crate::rproxy::handler_new::call_backend;
+use crate::{
+    models::request_context::PipelineData,
+    rproxy::handler_new::call_backend,
+};
 
 //use crate::rproxy::handler::call_backend;
 lazy_static!(

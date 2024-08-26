@@ -1,6 +1,13 @@
-use crate::models::pipeline_response::PipelineResponse;
-use crate::models::request_context::{PipelineData, RequestContext};
-use crate::GA;
+use crate::{
+    models::{
+        pipeline_response::PipelineResponse,
+        request_context::{
+            PipelineData,
+            RequestContext,
+        },
+    },
+    GA,
+};
 
 /* 3: Human engine
     - At this point, all requesters should be human! Let's kick their ass if not.

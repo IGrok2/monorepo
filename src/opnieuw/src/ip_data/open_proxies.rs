@@ -1,8 +1,10 @@
-use std::fs::File;
 use std::io::Read; // need this for .read_to_string
-use std::net::Ipv4Addr;
-use std::process::Command;
-use std::str::FromStr;
+use std::{
+    fs::File,
+    net::Ipv4Addr,
+    process::Command,
+    str::FromStr,
+};
 
 pub fn get_open_proxies() -> Vec<Ipv4Addr> {
     Command::new("curl") // TODO: make this directory

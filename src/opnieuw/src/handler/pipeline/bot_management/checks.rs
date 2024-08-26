@@ -1,8 +1,13 @@
-use crate::buckets::private::PrivateKeys;
-use crate::handler::pipeline::bot_management::models::{Bots, IsBotResponse};
-use crate::models::request_context::RequestContext;
-use crate::templates::error::internal_error;
-use crate::GA;
+use crate::{
+    buckets::private::PrivateKeys,
+    handler::pipeline::bot_management::models::{
+        Bots,
+        IsBotResponse,
+    },
+    models::request_context::RequestContext,
+    templates::error::internal_error,
+    GA,
+};
 
 impl RequestContext {
     pub fn is_bot(&self) -> IsBotResponse {

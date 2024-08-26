@@ -1,10 +1,14 @@
 // stores up to 100 requests every 10 seconds, each request has a 10% chance of being chosen before it cuts out
 // covers things that pass the challenges, and things that do not
 
-use crate::models::request_context::RequestContext;
-use crate::utils::counter::Counter;
-use std::ops::Deref;
-use std::sync::RwLock;
+use crate::{
+    models::request_context::RequestContext,
+    utils::counter::Counter,
+};
+use std::{
+    ops::Deref,
+    sync::RwLock,
+};
 
 lazy_static! {
     static ref INTERNAL_ANALYTICS: RwLock<Vec<RandomAnalytic>> = RwLock::new(Vec::new());

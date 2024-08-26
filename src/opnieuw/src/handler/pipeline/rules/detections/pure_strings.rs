@@ -1,5 +1,8 @@
-use crate::handler::pipeline::rules::models::MatchType;
-use crate::{debug, GA};
+use crate::{
+    debug,
+    handler::pipeline::rules::models::MatchType,
+    GA,
+};
 
 pub fn pure_string(actual: &str, expected: &str, m_type: &MatchType) -> bool {
     GA.handler.pr.pure_string_tested.inc();

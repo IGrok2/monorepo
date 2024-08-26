@@ -2,15 +2,21 @@ use clickhouse::Client;
 use std::time::Duration;
 
 use clickhouse::Row;
-use serde::Deserialize;
-use serde::Serialize;
+use serde::{
+    Deserialize,
+    Serialize,
+};
 use time::OffsetDateTime;
 use tokio::time::timeout;
 
-use crate::buckets::private::PrivateKeys;
-use crate::models::domain_context::OriginType;
-use crate::templates::error::internal_error;
-use crate::{debug, DOMAINS_DB, GA};
+use crate::{
+    buckets::private::PrivateKeys,
+    debug,
+    models::domain_context::OriginType,
+    templates::error::internal_error,
+    DOMAINS_DB,
+    GA,
+};
 
 //default
 //T8O.rORW5Y6u0
@@ -157,8 +163,7 @@ pub async fn do_domain_analytics() {
                         bots.push((format!("{:?}", x), (passed, threshold)));
                     }
                     _ => {
-                        private_analytics
-                            .push((format!("{:?}", k), (passed, threshold)));
+                        private_analytics.push((format!("{:?}", k), (passed, threshold)));
                     }
                 }
             }

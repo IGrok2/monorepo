@@ -1,15 +1,29 @@
-use std::io::{Read, Write};
+use std::io::{
+    Read,
+    Write,
+};
 // bans IPs (get murked)
-use std::net::UdpSocket;
-use std::os::unix::net::UnixStream;
-use std::sync::Arc;
+use std::{
+    net::UdpSocket,
+    os::unix::net::UnixStream,
+    sync::Arc,
+};
 
-use crate::buckets::models::PublicBucket;
-use crate::ip::models::IP;
-use crate::utils::counter::Counter;
-use crate::{debug, GA, IPS};
-use std::thread::sleep;
-use std::time::{Duration, Instant};
+use crate::{
+    buckets::models::PublicBucket,
+    debug,
+    ip::models::IP,
+    utils::counter::Counter,
+    GA,
+    IPS,
+};
+use std::{
+    thread::sleep,
+    time::{
+        Duration,
+        Instant,
+    },
+};
 
 pub async fn ips() {
     /*

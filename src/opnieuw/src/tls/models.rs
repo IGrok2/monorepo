@@ -1,18 +1,43 @@
-use std::io::{Error, ErrorKind, IoSlice, Read};
-use std::pin::Pin;
-use std::sync::Arc;
-use std::task::{Context, Poll};
+use std::{
+    io::{
+        Error,
+        ErrorKind,
+        IoSlice,
+        Read,
+    },
+    pin::Pin,
+    sync::Arc,
+    task::{
+        Context,
+        Poll,
+    },
+};
 
 use pin_project_lite::pin_project;
 use std::time::Duration;
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, ReadBuf};
-use tokio::net::TcpStream;
-use tokio_rustls::rustls::internal::msgs::codec::Reader;
-use tokio_rustls::rustls::internal::msgs::handshake::ClientExtension;
-use tokio_rustls::rustls::internal::msgs::handshake::{
-    ClientHelloPayload, HandshakeMessagePayload, HandshakePayload,
+use tokio::{
+    io::{
+        AsyncRead,
+        AsyncReadExt,
+        AsyncWrite,
+        ReadBuf,
+    },
+    net::TcpStream,
 };
-use tokio_rustls::rustls::internal::msgs::message::{Message, MessagePayload, OpaqueMessage};
+use tokio_rustls::rustls::internal::msgs::{
+    codec::Reader,
+    handshake::{
+        ClientExtension,
+        ClientHelloPayload,
+        HandshakeMessagePayload,
+        HandshakePayload,
+    },
+    message::{
+        Message,
+        MessagePayload,
+        OpaqueMessage,
+    },
+};
 use url::quirks::hash;
 /*
 use crate::buckets::models::PublicBucket;
@@ -20,7 +45,10 @@ use crate::{debug, GA};
 
  */
 
-use crate::{debug, GA};
+use crate::{
+    debug,
+    GA,
+};
 
 pin_project! {
     pub struct TlsStreamWrapper {
@@ -149,8 +177,6 @@ fn calculate_hexa(payload: &ClientHelloPayload) -> TlsFingerprint {
     let hashed_fingerprint = xxh3_64(num.as_bytes());
 
     debug!("hashed fingerprint: {}", hashed_fingerprint);
-
-    
 
     match hashed_fingerprint {
         1725583512279762209 | 10593271021972699412 | 8926745370823963578 => {

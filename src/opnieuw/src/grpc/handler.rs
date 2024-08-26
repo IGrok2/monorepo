@@ -1,52 +1,99 @@
 // this is for the server program
-use aes::cipher::generic_array::GenericArray;
-use aes::cipher::KeyInit;
+use aes::cipher::{
+    generic_array::GenericArray,
+    KeyInit,
+};
 use aes_gcm::Aes128Gcm;
 use bytes::Bytes;
 use dashmap::DashMap;
 use futures_util::AsyncWriteExt;
-use std::mem;
-use std::ops::{Deref, DerefMut};
-use std::sync::Arc;
-use std::time::Duration;
+use std::{
+    mem,
+    ops::{
+        Deref,
+        DerefMut,
+    },
+    sync::Arc,
+    time::Duration,
+};
 use tokio::time::timeout;
 
-use tonic::{Request, Response, Status};
-
-use crate::buckets::models::PublicBucket;
-use crate::buckets::private::PrivateBucket;
-use crate::grpc::all::big_baller_server::BigBaller;
-use crate::grpc::all::{
-    AllDomainSchema, Cert, ClearCacheMessage, DeleteDomainSchema, FullDomainSchema,
-    PartialDomainSchema, QueryResponse, SmartChallengeScript, Token,
+use tonic::{
+    Request,
+    Response,
+    Status,
 };
-use crate::grpc::tools::{fail, success};
+
 use crate::{
-    BACKGROUND_CHALLENGE, CHALLENGE_KEYS, CHALLENGE_RESPONSES, DOMAINS_DB, GA, NEW_DOMAINS_DB,
+    buckets::{
+        models::PublicBucket,
+        private::PrivateBucket,
+    },
+    grpc::{
+        all::{
+            big_baller_server::BigBaller,
+            AllDomainSchema,
+            Cert,
+            ClearCacheMessage,
+            DeleteDomainSchema,
+            FullDomainSchema,
+            PartialDomainSchema,
+            QueryResponse,
+            SmartChallengeScript,
+            Token,
+        },
+        tools::{
+            fail,
+            success,
+        },
+    },
+    BACKGROUND_CHALLENGE,
+    CHALLENGE_KEYS,
+    CHALLENGE_RESPONSES,
+    DOMAINS_DB,
+    GA,
+    NEW_DOMAINS_DB,
     SMART_CHALLENGE,
 };
 
-use crate::handler::pipeline::api_engine::models::ApiEngineSettings;
-use crate::handler::pipeline::bot_management::models::Bots;
-use crate::handler::pipeline::caching::models::CacheLevel;
-use crate::handler::pipeline::human_engine::models::{
-    HumanEngine, HumanEngineMode, InternalCounters,
+use crate::handler::pipeline::{
+    api_engine::models::ApiEngineSettings,
+    bot_management::models::Bots,
+    caching::models::CacheLevel,
+    human_engine::{
+        models::{
+            HumanEngine,
+            HumanEngineMode,
+            InternalCounters,
+        },
+        scores::failsafe::models::Failsafe,
+    },
 };
-use crate::handler::pipeline::human_engine::scores::failsafe::models::Failsafe;
 
-use crate::models::analytics::Analytic;
-use crate::models::domain_context::{
-    AppSettings, BotManagementSettings, CachingSettings, DomainContext, InternalSettings,
-    OriginSettings, RulesSettings,
+use crate::models::{
+    analytics::Analytic,
+    domain_context::{
+        AppSettings,
+        BotManagementSettings,
+        CachingSettings,
+        DomainContext,
+        InternalSettings,
+        OriginSettings,
+        RulesSettings,
+    },
 };
 
 use crate::utils::counter::Counter;
 
-use crate::debug;
-use crate::grpc::insert_debugger::insert_debugger;
-use crate::grpc::specific_helpers::RpcToRust;
-use crate::models::analytics_by_example::AnalyticsByExampleDomain;
-use crate::tls::ssl_models::ChallengeResponse;
+use crate::{
+    debug,
+    grpc::{
+        insert_debugger::insert_debugger,
+        specific_helpers::RpcToRust,
+    },
+    models::analytics_by_example::AnalyticsByExampleDomain,
+    tls::ssl_models::ChallengeResponse,
+};
 
 #[derive(Default, Clone)]
 pub struct FortyTwo {}
@@ -450,8 +497,10 @@ impl BigBaller for FortyTwo {
 
         let req = request.into_inner();
 
-        use std::borrow::BorrowMut;
-        use std::ops::DerefMut;
+        use std::{
+            borrow::BorrowMut,
+            ops::DerefMut,
+        };
 
         debug!(
             "shuffling challenge: {}, {}, {}",

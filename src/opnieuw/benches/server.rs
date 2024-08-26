@@ -5,20 +5,36 @@ extern crate test;
 mod support;
 
 use bytes::Bytes;
-use http_body_util::combinators::BoxBody;
-use http_body_util::{BodyExt, Full};
-use std::convert::Infallible;
-use std::ffi::c_int;
-use std::io::{Read, Write};
-use std::net::{SocketAddr, TcpStream};
-use std::sync::{mpsc, Arc};
-use std::time::Duration;
+use http_body_util::{
+    combinators::BoxBody,
+    BodyExt,
+    Full,
+};
+use std::{
+    convert::Infallible,
+    ffi::c_int,
+    io::{
+        Read,
+        Write,
+    },
+    net::{
+        SocketAddr,
+        TcpStream,
+    },
+    sync::{
+        mpsc,
+        Arc,
+    },
+    time::Duration,
+};
 
 use tokio::sync::oneshot;
 
-use hyper::server::conn::http1;
-use hyper::service::service_fn;
-use hyper::Response;
+use hyper::{
+    server::conn::http1,
+    service::service_fn,
+    Response,
+};
 use tokio::net::TcpListener;
 
 #[bench]
@@ -40,7 +56,12 @@ fn core_test(b: &mut test::Bencher) {
                 .expect("rt build");
 
             println!("spawn");
-            use socket2::{Domain, Protocol, Socket, Type};
+            use socket2::{
+                Domain,
+                Protocol,
+                Socket,
+                Type,
+            };
             let domain = Domain::for_address(addr);
             let socket = Socket::new(domain, Type::STREAM, Some(Protocol::TCP)).unwrap();
             socket.set_reuse_address(true).unwrap();
@@ -89,8 +110,10 @@ fn core_test(b: &mut test::Bencher) {
 
                                 println!("new connection: {}", counter.inc().get());
 
-                                use vulcancore::handler::index::handler_middleware;
-                                use vulcancore::handler::models::ConnectionContext;
+                                use vulcancore::handler::{
+                                    index::handler_middleware,
+                                    models::ConnectionContext,
+                                };
 
                                 async move {
                                     handler_middleware(

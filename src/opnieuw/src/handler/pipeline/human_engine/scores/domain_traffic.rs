@@ -1,8 +1,10 @@
 // how much traffic the domain is currently seeing
 // essentially the failsafe
 
-use crate::models::request_context::RequestContext;
-use crate::GA;
+use crate::{
+    models::request_context::RequestContext,
+    GA,
+};
 
 impl RequestContext {
     // check_domain_traffic is meant to work as an emergency stopgate solution before the threading are checked and the threshold comes back down

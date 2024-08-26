@@ -4,8 +4,10 @@ Global ratelimits for protecting Packetware Systems
  */
 
 use crate::GA;
-use dashmap::iter::Iter;
-use dashmap::DashMap;
+use dashmap::{
+    iter::Iter,
+    DashMap,
+};
 use std::collections::hash_map::RandomState;
 
 use crate::utils::counter::Counter;

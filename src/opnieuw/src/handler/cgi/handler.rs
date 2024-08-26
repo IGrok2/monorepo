@@ -1,26 +1,54 @@
-use crate::buckets::models::PublicBucket;
-use crate::handler::cgi::crypto::ParsedChallengeResponse;
-use crate::handler::models::ConnectionContext;
-use crate::handler::pipeline::human_engine::cookie::ChallengeCookie;
-use crate::ip::models::{Token, NewTrafficType};
-use crate::models::request_context::RequestContext;
-use crate::templates::error::internal_error;
-use crate::templates::invalid::invalid;
-use crate::tls::models::TlsFingerprint;
-use crate::utils::counter::Counter;
-use crate::utils::cycle::Cycle;
-use crate::utils::epoch::epoch;
-use crate::utils::resp::resp;
-use crate::{debug, HttpResponse, BACKGROUND_CHALLENGE, GA};
-use aes_gcm::aead::{Aead, AeadMut};
-use aes_gcm::KeyInit;
+use crate::{
+    buckets::models::PublicBucket,
+    debug,
+    handler::{
+        cgi::crypto::ParsedChallengeResponse,
+        models::ConnectionContext,
+        pipeline::human_engine::cookie::ChallengeCookie,
+    },
+    ip::models::{
+        NewTrafficType,
+        Token,
+    },
+    models::request_context::RequestContext,
+    templates::{
+        error::internal_error,
+        invalid::invalid,
+    },
+    tls::models::TlsFingerprint,
+    utils::{
+        counter::Counter,
+        cycle::Cycle,
+        epoch::epoch,
+        resp::resp,
+    },
+    HttpResponse,
+    BACKGROUND_CHALLENGE,
+    GA,
+};
+use aes_gcm::{
+    aead::{
+        Aead,
+        AeadMut,
+    },
+    KeyInit,
+};
 use futures_util::StreamExt;
 use http_body_util::BodyExt;
-use hyper::body::{Bytes, Frame, Incoming};
-use hyper::{Method, StatusCode};
-use std::ops::Deref;
-use std::rc::Rc;
-use std::time::Duration;
+use hyper::{
+    body::{
+        Bytes,
+        Frame,
+        Incoming,
+    },
+    Method,
+    StatusCode,
+};
+use std::{
+    ops::Deref,
+    rc::Rc,
+    time::Duration,
+};
 use tokio::time::timeout;
 
 impl RequestContext {
@@ -49,7 +77,8 @@ impl RequestContext {
                             .collect()
                             .await
                     })
-                    .await {
+                    .await
+                    {
                         Ok(t) => match t {
                             Ok(v) => v,
                             Err(_e) => return invalid("too big"),

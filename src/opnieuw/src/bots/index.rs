@@ -1,8 +1,12 @@
 // by the way, small note about bots: EACH domain should have a RL bucket that's just for bots ...
 // prevents abuse!
-use crate::bots::providers::bing::get_bing;
-use crate::bots::providers::google::get_google;
-use crate::handler::pipeline::bot_management::models::Bots;
+use crate::{
+    bots::providers::{
+        bing::get_bing,
+        google::get_google,
+    },
+    handler::pipeline::bot_management::models::Bots,
+};
 use std::sync::Arc;
 
 // get_bots returns a Vector of a tuple containing a Vector
@@ -12,10 +16,9 @@ pub async fn get_bots() {
 
     println!("Getting Googlebot ...");
     let google = get_google().await;
-    crate::BOTS.write().insert(
-        Bots::Googlebot,
-        Arc::new((google, "Googlebot".to_string())),
-    );
+    crate::BOTS
+        .write()
+        .insert(Bots::Googlebot, Arc::new((google, "Googlebot".to_string())));
 
     println!("Getting Bingbot ...");
     let bing = get_bing().await;

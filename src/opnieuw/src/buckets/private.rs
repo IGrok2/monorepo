@@ -1,16 +1,28 @@
 use std::collections::HashMap;
 
-use crate::buckets::private::PrivateKeys::{
-    AllowedWsMessages, CacheAttempted, ExpectedPassed, ServerMessages,
+use crate::{
+    buckets::private::PrivateKeys::{
+        AllowedWsMessages,
+        CacheAttempted,
+        ExpectedPassed,
+        ServerMessages,
+    },
+    handler::pipeline::bot_management::models::Bots,
+    models::{
+        domain_context::InternalSettings,
+        request_context::RequestContext,
+    },
+    utils::counter::Counter,
+    GA,
 };
-use crate::handler::pipeline::bot_management::models::Bots;
-use crate::models::domain_context::InternalSettings;
-use crate::models::request_context::RequestContext;
-use crate::utils::counter::Counter;
-use crate::GA;
 use rapidsync::RapidSnap;
-use std::fmt::{Display, Formatter};
-use std::sync::RwLock;
+use std::{
+    fmt::{
+        Display,
+        Formatter,
+    },
+    sync::RwLock,
+};
 
 // in a private bucket, there can be dynamic thresholds
 

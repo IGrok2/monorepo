@@ -1,6 +1,8 @@
-use crate::ip::models::IP;
-use crate::tls::models::TlsFingerprint;
-use crate::utils::counter::Counter;
+use crate::{
+    ip::models::IP,
+    tls::models::TlsFingerprint,
+    utils::counter::Counter,
+};
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]

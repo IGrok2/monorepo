@@ -1,9 +1,13 @@
-use crate::buckets::models::PublicBucket;
-use crate::handler::models::ConnectionContext;
-use crate::ip::models::NewTrafficType;
+use crate::{
+    buckets::models::PublicBucket,
+    handler::models::ConnectionContext,
+    ip::models::NewTrafficType,
+};
 
-use crate::models::pipeline_response::PipelineResponse;
-use crate::templates::global_ratelimit::global_ratelimit_template;
+use crate::{
+    models::pipeline_response::PipelineResponse,
+    templates::global_ratelimit::global_ratelimit_template,
+};
 
 impl ConnectionContext {
     pub fn global_ratelimit(&self) -> PipelineResponse {

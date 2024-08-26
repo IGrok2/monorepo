@@ -1,5 +1,7 @@
-use crate::models::request_context::RequestContext;
-use crate::GA;
+use crate::{
+    models::request_context::RequestContext,
+    GA,
+};
 
 impl RequestContext {
     // the check_burst system is designed to protect domains from attack immediately

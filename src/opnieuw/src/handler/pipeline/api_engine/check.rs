@@ -2,11 +2,17 @@
 
 use std::rc::Rc;
 
-use crate::buckets::models::PublicBucket;
-use crate::handler::pipeline::api_engine::models::{
-    Method as ApiMethod, Method, Rule, TriggerType, WebMethods,
+use crate::{
+    buckets::models::PublicBucket,
+    handler::pipeline::api_engine::models::{
+        Method as ApiMethod,
+        Method,
+        Rule,
+        TriggerType,
+        WebMethods,
+    },
+    models::request_context::RequestContext,
 };
-use crate::models::request_context::RequestContext;
 
 // sends back if a WS is allowed here, along with an optional ratelimit bucket to use for that path
 // actually, this shouldn't be here, because the api engine will already block WS connections that shouldn't be there

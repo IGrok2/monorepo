@@ -1,5 +1,8 @@
 use actix_web::http::StatusCode;
-use std::time::{Duration, Instant};
+use std::time::{
+    Duration,
+    Instant,
+};
 
 /*
 #[derive(Debug)]

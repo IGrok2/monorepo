@@ -1,5 +1,7 @@
-use crate::models::request_context::RequestContext;
-use crate::GA;
+use crate::{
+    models::request_context::RequestContext,
+    GA,
+};
 
 impl RequestContext {
     pub fn check_user_agent(&self) -> u32 {

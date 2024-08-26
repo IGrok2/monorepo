@@ -1,11 +1,17 @@
-use crate::ip_data::models::IPAsnCountry;
-use crate::ip_data::models::InitData;
-use crate::utils::counter::Counter;
-use std::fs::File;
-use std::io::Read;
-use std::net::Ipv4Addr;
-use std::process::Command;
-use std::str::FromStr;
+use crate::{
+    ip_data::models::{
+        IPAsnCountry,
+        InitData,
+    },
+    utils::counter::Counter,
+};
+use std::{
+    fs::File,
+    io::Read,
+    net::Ipv4Addr,
+    process::Command,
+    str::FromStr,
+};
 
 pub fn get_ip_data() -> Vec<IPAsnCountry> {
     Command::new("curl") // TODO: make this directory

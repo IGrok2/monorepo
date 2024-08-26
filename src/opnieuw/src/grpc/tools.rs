@@ -1,7 +1,12 @@
-use crate::grpc::all::QueryResponse;
-use crate::templates::error::internal_error;
-use crate::GA;
-use tonic::{Response, Status};
+use crate::{
+    grpc::all::QueryResponse,
+    templates::error::internal_error,
+    GA,
+};
+use tonic::{
+    Response,
+    Status,
+};
 
 pub fn success() -> Result<Response<QueryResponse>, Status> {
     GA.grpc.success.inc();

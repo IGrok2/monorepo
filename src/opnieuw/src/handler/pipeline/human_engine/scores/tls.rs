@@ -1,7 +1,9 @@
-use crate::buckets::models::PublicBucket;
-use crate::models::request_context::RequestContext;
-use crate::tls::models::TlsFingerprint;
-use crate::GA;
+use crate::{
+    buckets::models::PublicBucket,
+    models::request_context::RequestContext,
+    tls::models::TlsFingerprint,
+    GA,
+};
 
 /*
 This will ultimately be the package for TLS fingerprinting and other TLS specifications!

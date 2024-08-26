@@ -1,7 +1,15 @@
 use crate::grpc::all::{
-    AllDomainSchema, DeleteDomainSchema, FullDomainSchema, PartialDomainSchema, QueryResponse,
+    AllDomainSchema,
+    DeleteDomainSchema,
+    FullDomainSchema,
+    PartialDomainSchema,
+    QueryResponse,
 };
-use tonic::{Request, Response, Status};
+use tonic::{
+    Request,
+    Response,
+    Status,
+};
 
 /*
  // on startup message, includes all domains

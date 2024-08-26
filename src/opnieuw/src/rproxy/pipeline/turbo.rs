@@ -1,9 +1,16 @@
-use crate::handler::pipeline::human_engine::smart_challenge::CookieTester;
-use crate::models::egress_wrapper::EgressWrapper;
-use crate::models::request_context::RequestContext;
-use crate::rproxy::outbound_wrapper::HeartInsertable;
-use hyper::body::Incoming;
-use hyper::{HeaderMap, Response};
+use crate::{
+    handler::pipeline::human_engine::smart_challenge::CookieTester,
+    models::{
+        egress_wrapper::EgressWrapper,
+        request_context::RequestContext,
+    },
+    rproxy::outbound_wrapper::HeartInsertable,
+};
+use hyper::{
+    body::Incoming,
+    HeaderMap,
+    Response,
+};
 
 impl RequestContext {
     pub fn get_turbo(
@@ -13,7 +20,9 @@ impl RequestContext {
     ) -> HeartInsertable {
         // if it's disabled, we can't activate it
         // also, if the cookie already exists, don't have them redo it
-        if !self.domain.human_engine_settings.turbo_mode_enabled || matches!(self.token_tester_internal(), CookieTester::Good) {
+        if !self.domain.human_engine_settings.turbo_mode_enabled
+            || matches!(self.token_tester_internal(), CookieTester::Good)
+        {
             return HeartInsertable::No;
         }
 

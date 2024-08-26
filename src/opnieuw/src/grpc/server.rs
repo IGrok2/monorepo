@@ -1,9 +1,13 @@
-use crate::grpc::all::big_baller_server::BigBallerServer;
-use crate::grpc::handler::FortyTwo;
+use crate::grpc::{
+    all::big_baller_server::BigBallerServer,
+    handler::FortyTwo,
+};
 use std::error::Error;
-use tonic::transport::server::ServerTlsConfig;
-use tonic::transport::Identity;
-use tonic::transport::Server;
+use tonic::transport::{
+    server::ServerTlsConfig,
+    Identity,
+    Server,
+};
 
 pub async fn start_grpc() {
     // because we can't share errors across tasks

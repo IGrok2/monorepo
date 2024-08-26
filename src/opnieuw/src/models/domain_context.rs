@@ -1,20 +1,41 @@
-use crate::buckets::models::PublicBucket;
-use crate::buckets::private::PrivateBucket;
-use crate::cache_system::models::CacheBucket;
-use crate::handler::pipeline::api_engine::models::ApiEngineSettings;
-use crate::handler::pipeline::bot_management::models::Bots;
-use crate::handler::pipeline::caching::models::CacheLevel;
-use crate::handler::pipeline::human_engine::models::HumanEngine;
-use crate::handler::pipeline::rules::models::Rule;
-use crate::models::analytics::Analytic;
-use crate::models::analytics_by_example::AnalyticsByExampleDomain;
-use crate::models::regions::Region;
-use crate::utils::counter::Counter;
+use crate::{
+    buckets::{
+        models::PublicBucket,
+        private::PrivateBucket,
+    },
+    cache_system::models::CacheBucket,
+    handler::pipeline::{
+        api_engine::models::ApiEngineSettings,
+        bot_management::models::Bots,
+        caching::models::CacheLevel,
+        human_engine::models::HumanEngine,
+        rules::models::Rule,
+    },
+    models::{
+        analytics::Analytic,
+        analytics_by_example::AnalyticsByExampleDomain,
+        regions::Region,
+    },
+    utils::counter::Counter,
+};
 use dashmap::DashMap;
-use std::sync::atomic::{AtomicBool, AtomicU32};
-use std::sync::Arc;
-use std::time::{Duration, Instant};
-use tokio_rustls::rustls::{Certificate, PrivateKey};
+use std::{
+    sync::{
+        atomic::{
+            AtomicBool,
+            AtomicU32,
+        },
+        Arc,
+    },
+    time::{
+        Duration,
+        Instant,
+    },
+};
+use tokio_rustls::rustls::{
+    Certificate,
+    PrivateKey,
+};
 use url::Url;
 
 #[derive(Debug)]

@@ -3,11 +3,20 @@
 use std::{
     future::Future,
     pin::Pin,
-    task::{Context, Poll},
-    time::{Duration, Instant},
+    task::{
+        Context,
+        Poll,
+    },
+    time::{
+        Duration,
+        Instant,
+    },
 };
 
-use hyper::rt::{Sleep, Timer};
+use hyper::rt::{
+    Sleep,
+    Timer,
+};
 use pin_project_lite::pin_project;
 
 #[derive(Clone)]

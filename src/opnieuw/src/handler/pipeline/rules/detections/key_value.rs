@@ -1,5 +1,7 @@
-use crate::handler::pipeline::rules::models::MatchType;
-use crate::GA;
+use crate::{
+    handler::pipeline::rules::models::MatchType,
+    GA,
+};
 
 pub fn key_value(actual: (&str, &str), expected: (&str, &str), m_type: &MatchType) -> bool {
     GA.handler.pr.key_value_tested.inc();

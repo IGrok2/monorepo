@@ -2,61 +2,116 @@
 #![allow(dead_code, unused_imports)]
 
 // imports
-use std::convert::Infallible;
-use std::iter;
-use std::net::SocketAddr;
+use std::{
+    convert::Infallible,
+    iter,
+    net::SocketAddr,
+};
 
-use crate::bots::index::get_bots;
-use crate::buckets::global::GlobalRatelimitKeys;
-use crate::grpc::client::get_all_domains;
-use crate::grpc::server::start_grpc;
-use crate::handler::index::{handler, handler_middleware};
-use crate::handler::models::ConnectionContext;
-use crate::handler::pipeline::bot_management::models::Bots;
-use crate::ip::models::{NewTrafficType, IP};
-use crate::ip_data::open_proxies::get_open_proxies;
-use crate::models::domain_context::DomainContext;
-use crate::models::regions::Region;
-use crate::templates::error::internal_error;
-use crate::threading::index::start_background_tasks;
-use crate::tls::models::{TlsFingerprint, TlsStreamWrapper};
-use crate::tls::resolver_model::CertResolver;
-use crate::tls::ssl_models::ChallengeResponse;
-use crate::utils::baller::BallerLock;
-use crate::utils::counter::Counter;
-use crate::utils::debug::debug_setup;
-use crate::utils::domains::get_tld_list;
-use crate::utils::global_analytics::models::GlobalAnalytics;
-use crate::utils::timeouts::admin_timeout;
+use crate::{
+    bots::index::get_bots,
+    buckets::global::GlobalRatelimitKeys,
+    grpc::{
+        client::get_all_domains,
+        server::start_grpc,
+    },
+    handler::{
+        index::{
+            handler,
+            handler_middleware,
+        },
+        models::ConnectionContext,
+        pipeline::bot_management::models::Bots,
+    },
+    ip::models::{
+        NewTrafficType,
+        IP,
+    },
+    ip_data::open_proxies::get_open_proxies,
+    models::{
+        domain_context::DomainContext,
+        regions::Region,
+    },
+    templates::error::internal_error,
+    threading::index::start_background_tasks,
+    tls::{
+        models::{
+            TlsFingerprint,
+            TlsStreamWrapper,
+        },
+        resolver_model::CertResolver,
+        ssl_models::ChallengeResponse,
+    },
+    utils::{
+        baller::BallerLock,
+        counter::Counter,
+        debug::debug_setup,
+        domains::get_tld_list,
+        global_analytics::models::GlobalAnalytics,
+        timeouts::admin_timeout,
+    },
+};
 use aes::Aes128;
-use aes_gcm::aead::consts::U12;
-use aes_gcm::aead::generic_array::GenericArray;
-use aes_gcm::aead::{Aead, AeadMut};
-use aes_gcm::{Aes128Gcm, AesGcm, KeyInit};
+use aes_gcm::{
+    aead::{
+        consts::U12,
+        generic_array::GenericArray,
+        Aead,
+        AeadMut,
+    },
+    Aes128Gcm,
+    AesGcm,
+    KeyInit,
+};
 use dashmap::DashMap;
-use http_body_util::combinators::BoxBody;
-use http_body_util::Full;
-use hyper::body::Bytes;
-use hyper::header::HeaderName;
-use hyper::server::conn::{http1, http2};
-use hyper::service::service_fn;
-use hyper::{Request, Response};
-use hyper_util::rt::{TokioExecutor, TokioIo};
-use rustls_pemfile::{read_one, Item};
-use std::collections::HashMap;
-use std::ffi::c_int;
-use std::net::Ipv4Addr;
-use std::process::Command;
-use std::sync::atomic::Ordering;
-use std::sync::Arc;
-use std::sync::RwLock;
-use std::time::Duration;
-use std::u32::MAX;
-use tokio::net::TcpListener;
-use tokio::task;
-use tokio::time::{sleep, timeout};
-use tokio_rustls::rustls;
-use tokio_rustls::rustls::sign::CertifiedKey;
+use http_body_util::{
+    combinators::BoxBody,
+    Full,
+};
+use hyper::{
+    body::Bytes,
+    header::HeaderName,
+    server::conn::{
+        http1,
+        http2,
+    },
+    service::service_fn,
+    Request,
+    Response,
+};
+use hyper_util::rt::{
+    TokioExecutor,
+    TokioIo,
+};
+use rustls_pemfile::{
+    read_one,
+    Item,
+};
+use std::{
+    collections::HashMap,
+    ffi::c_int,
+    net::Ipv4Addr,
+    process::Command,
+    sync::{
+        atomic::Ordering,
+        Arc,
+        RwLock,
+    },
+    time::Duration,
+    u32::MAX,
+};
+use tokio::{
+    net::TcpListener,
+    task,
+    time::{
+        sleep,
+        timeout,
+    },
+};
+use tokio_rustls::{
+    rustls,
+    rustls::sign::CertifiedKey,
+};
 
 // mods
 mod bots;
@@ -197,7 +252,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 80));
 
-    use socket2::{Domain, Protocol, Socket, Type};
+    use socket2::{
+        Domain,
+        Protocol,
+        Socket,
+        Type,
+    };
     let domain = Domain::for_address(addr);
     let socket = Socket::new(domain, Type::STREAM, Some(Protocol::TCP))?;
     socket.set_reuse_address(true)?;
@@ -347,7 +407,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                                                             ip,
                                                         },
                                                     )
-                                                        .await
+                                                    .await
                                                 }
                                             }),
                                         )
@@ -379,7 +439,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                                                             ip,
                                                         },
                                                     )
-                                                        .await
+                                                    .await
                                                 }
                                             }),
                                         )

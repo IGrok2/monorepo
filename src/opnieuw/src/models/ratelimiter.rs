@@ -1,5 +1,7 @@
-use std::sync::atomic::AtomicUsize;
-use std::time::Duration;
+use std::{
+    sync::atomic::AtomicUsize,
+    time::Duration,
+};
 
 #[derive(Debug)] // so we can clone the object to put in the db
 pub struct Ratelimiter {

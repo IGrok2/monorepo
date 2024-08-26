@@ -1,6 +1,9 @@
-use crate::models::request_context::RequestContext;
-use crate::utils::counter::Counter;
-use crate::{debug, GA};
+use crate::{
+    debug,
+    models::request_context::RequestContext,
+    utils::counter::Counter,
+    GA,
+};
 use rand::prelude::*;
 use std::time::SystemTime;
 

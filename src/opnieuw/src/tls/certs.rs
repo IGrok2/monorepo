@@ -1,8 +1,17 @@
-use crate::tls::resolver_model::CertResolver;
-use crate::{CERTS, GA, WILDCARD_CERT};
+use crate::{
+    tls::resolver_model::CertResolver,
+    CERTS,
+    GA,
+    WILDCARD_CERT,
+};
 use std::sync::Arc;
-use tokio_rustls::rustls::server::{ClientHello, ResolvesServerCert};
-use tokio_rustls::rustls::sign::CertifiedKey;
+use tokio_rustls::rustls::{
+    server::{
+        ClientHello,
+        ResolvesServerCert,
+    },
+    sign::CertifiedKey,
+};
 
 impl ResolvesServerCert for CertResolver {
     fn resolve(&self, client_hello: ClientHello<'_>) -> Option<Arc<CertifiedKey>> {

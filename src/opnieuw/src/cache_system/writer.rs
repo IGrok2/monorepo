@@ -1,24 +1,55 @@
-use crate::cache_system::models::{CacheBucket, CachedObject};
-use crate::models::domain_context::DomainContext;
+use crate::{
+    cache_system::models::{
+        CacheBucket,
+        CachedObject,
+    },
+    models::domain_context::DomainContext,
+};
 use clickhouse::sql::Bind;
-use hyper::{HeaderMap, StatusCode};
+use hyper::{
+    HeaderMap,
+    StatusCode,
+};
 use pin_project_lite::pin_project;
-use std::fs;
-use std::fs::read;
-use std::io::{BufReader, Error, ErrorKind};
-use std::mem::ManuallyDrop;
-use std::ops::Add;
-use std::path::Path;
-use std::pin::Pin;
-use std::process::Command;
-use std::sync::atomic::AtomicBool;
-use std::sync::Arc;
-use std::task::{Context, Poll};
-use std::thread::sleep;
-use std::time::{Duration, Instant};
-use tokio::fs::File;
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWriteExt, BufWriter, ReadBuf};
-use tokio::{select, task};
+use std::{
+    fs,
+    fs::read,
+    io::{
+        BufReader,
+        Error,
+        ErrorKind,
+    },
+    mem::ManuallyDrop,
+    ops::Add,
+    path::Path,
+    pin::Pin,
+    process::Command,
+    sync::{
+        atomic::AtomicBool,
+        Arc,
+    },
+    task::{
+        Context,
+        Poll,
+    },
+    thread::sleep,
+    time::{
+        Duration,
+        Instant,
+    },
+};
+use tokio::{
+    fs::File,
+    io::{
+        AsyncRead,
+        AsyncReadExt,
+        AsyncWriteExt,
+        BufWriter,
+        ReadBuf,
+    },
+    select,
+    task,
+};
 
 pub struct CacheWriter {
     pub domain: Arc<DomainContext>,
@@ -254,10 +285,14 @@ impl CacheWriter {
     }
 }
 
-use crate::handler::pipeline::caching::models::CacheLevel;
-use crate::GA;
-use futures_util::ready;
-use futures_util::task::SpawnExt;
+use crate::{
+    handler::pipeline::caching::models::CacheLevel,
+    GA,
+};
+use futures_util::{
+    ready,
+    task::SpawnExt,
+};
 use hyper::body::Body;
 use tokio::time::timeout;
 // TODO reinstate

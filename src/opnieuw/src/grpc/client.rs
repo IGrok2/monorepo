@@ -1,23 +1,40 @@
-use std::error::Error;
-use std::mem;
-use std::ops::DerefMut;
+use std::{
+    error::Error,
+    mem,
+    ops::DerefMut,
+};
 
-use crate::buckets::private::PrivateBucket;
-use crate::grpc::all::big_baller_client::BigBallerClient;
-use crate::grpc::all::QueryResponse;
-use crate::grpc::specific_helpers::RpcToRust;
-use crate::models::analytics::Analytic;
-use crate::models::analytics_by_example::AnalyticsByExampleDomain;
-use crate::models::domain_context::DomainContext;
-use crate::utils::counter::Counter;
-use crate::{debug, DOMAINS_DB};
-use aes::cipher::generic_array::GenericArray;
-use aes::cipher::KeyInit;
+use crate::{
+    buckets::private::PrivateBucket,
+    debug,
+    grpc::{
+        all::{
+            big_baller_client::BigBallerClient,
+            QueryResponse,
+        },
+        specific_helpers::RpcToRust,
+    },
+    models::{
+        analytics::Analytic,
+        analytics_by_example::AnalyticsByExampleDomain,
+        domain_context::DomainContext,
+    },
+    utils::counter::Counter,
+    DOMAINS_DB,
+};
+use aes::cipher::{
+    generic_array::GenericArray,
+    KeyInit,
+};
 use aes_gcm::Aes128Gcm;
 use bytes::Bytes;
 use dashmap::DashMap;
 use std::sync::Arc;
-use tonic::transport::{Certificate, ClientTlsConfig, Identity};
+use tonic::transport::{
+    Certificate,
+    ClientTlsConfig,
+    Identity,
+};
 
 pub async fn get_all_domains() -> Result<(), Box<dyn Error>> {
     lazy_static! {

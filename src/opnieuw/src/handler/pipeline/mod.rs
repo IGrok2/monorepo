@@ -1,5 +1,10 @@
-use crate::models::pipeline_response::PipelineResponse;
-use crate::models::request_context::{PipelineData, RequestContext};
+use crate::models::{
+    pipeline_response::PipelineResponse,
+    request_context::{
+        PipelineData,
+        RequestContext,
+    },
+};
 use actix_web::HttpRequest;
 
 pub mod api_engine;

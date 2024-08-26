@@ -1,19 +1,37 @@
-use hyper::http::request::Parts;
-use hyper::Request;
-use std::cell::RefCell;
-use std::net::Ipv4Addr;
-use std::rc::Rc;
-use std::sync::atomic::AtomicBool;
-use std::sync::Arc;
-use std::time::Duration;
+use hyper::{
+    http::request::Parts,
+    Request,
+};
+use std::{
+    cell::RefCell,
+    net::Ipv4Addr,
+    rc::Rc,
+    sync::{
+        atomic::AtomicBool,
+        Arc,
+    },
+    time::Duration,
+};
 
-use crate::buckets::models::PublicBucket;
-use crate::handler::models::ConnectionContext;
-use crate::handler::pipeline::api_engine::models::WsMethods;
-use crate::handler::pipeline::caching::models::CacheLevel;
-use crate::ip::models::IP;
-use crate::models::analytics_by_example::AnalyticsByExample;
-use crate::models::domain_context::{DomainContext, OriginSetting, OriginType};
+use crate::{
+    buckets::models::PublicBucket,
+    handler::{
+        models::ConnectionContext,
+        pipeline::{
+            api_engine::models::WsMethods,
+            caching::models::CacheLevel,
+        },
+    },
+    ip::models::IP,
+    models::{
+        analytics_by_example::AnalyticsByExample,
+        domain_context::{
+            DomainContext,
+            OriginSetting,
+            OriginType,
+        },
+    },
+};
 
 pub struct RequestContext {
     // lifetime name is 'a

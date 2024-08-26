@@ -1,5 +1,7 @@
-use crate::models::domain_context::DomainContext;
-use crate::GA;
+use crate::{
+    models::domain_context::DomainContext,
+    GA,
+};
 use std::time::Duration;
 use tokio::time::timeout;
 

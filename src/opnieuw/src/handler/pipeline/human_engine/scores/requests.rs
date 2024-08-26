@@ -1,8 +1,10 @@
 // how many requests this IP has made to our services thus far
 
-use crate::buckets::models::PublicBucket;
-use crate::models::request_context::RequestContext;
-use crate::GA;
+use crate::{
+    buckets::models::PublicBucket,
+    models::request_context::RequestContext,
+    GA,
+};
 
 impl RequestContext {
     pub fn check_traffic_ip(&self) -> u32 {

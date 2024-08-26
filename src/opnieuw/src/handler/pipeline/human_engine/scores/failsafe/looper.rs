@@ -1,4 +1,7 @@
-use crate::{DOMAINS_DB, ORDER};
+use crate::{
+    DOMAINS_DB,
+    ORDER,
+};
 use std::time::Instant;
 
 pub async fn failsafe_loop() {

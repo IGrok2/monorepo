@@ -1,10 +1,17 @@
 // Inspect the request -- for DDoS *and* WAF
 // This file should utilize the "block" threading
 
-use crate::models::pipeline_response::PipelineResponse;
-use crate::models::request_context::{PipelineData, RequestContext};
-use crate::templates::domain_not_found::domain_not_found;
-use crate::GA;
+use crate::{
+    models::{
+        pipeline_response::PipelineResponse,
+        request_context::{
+            PipelineData,
+            RequestContext,
+        },
+    },
+    templates::domain_not_found::domain_not_found,
+    GA,
+};
 
 impl RequestContext {
     pub fn request_inspection(&self, _data: &[PipelineData]) -> PipelineResponse {

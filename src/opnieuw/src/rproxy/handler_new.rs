@@ -1,25 +1,41 @@
-use crate::cache_system::writer::CacheWriter;
-use crate::handler::pipeline::caching::models::CacheLevel;
-use crate::models::domain_context::OriginSetting;
-use crate::models::egress_wrapper::EgressWrapper;
-use crate::models::request_context::{PipelineData, RequestContext};
-use crate::rproxy::outbound_wrapper::OutboundWrapper;
-use crate::rproxy::pipeline::utils::get_content_length;
-use crate::rproxy::tools::tls_config::tls_config;
-use crate::tls::cert_roots::webpki_roots_cert_store;
-use crate::utils::resp::add_headers;
-use crate::{debug, HttpResponse, EGRESS_HEADERS, GA};
+use crate::{
+    cache_system::writer::CacheWriter,
+    debug,
+    handler::pipeline::caching::models::CacheLevel,
+    models::{
+        domain_context::OriginSetting,
+        egress_wrapper::EgressWrapper,
+        request_context::{
+            PipelineData,
+            RequestContext,
+        },
+    },
+    rproxy::{
+        outbound_wrapper::OutboundWrapper,
+        pipeline::utils::get_content_length,
+        tools::tls_config::tls_config,
+    },
+    tls::cert_roots::webpki_roots_cert_store,
+    utils::resp::add_headers,
+    HttpResponse,
+    EGRESS_HEADERS,
+    GA,
+};
 use futures_util::task::Spawn;
 use http_body_util::BodyExt;
-use hyper::body::Incoming;
-use hyper::header::HeaderValue;
-use hyper::http::request::Builder;
-use hyper::Response;
+use hyper::{
+    body::Incoming,
+    header::HeaderValue,
+    http::request::Builder,
+    Response,
+};
 use hyper_util::rt::TokioIo;
 use std::sync::Arc;
 use tokio::net::TcpStream;
-use tokio_rustls::rustls::ClientConfig;
-use tokio_rustls::TlsConnector;
+use tokio_rustls::{
+    rustls::ClientConfig,
+    TlsConnector,
+};
 use url::Url;
 
 #[rustfmt::skip]

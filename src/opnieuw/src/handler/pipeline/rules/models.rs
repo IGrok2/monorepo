@@ -1,9 +1,13 @@
-use crate::buckets::models::PublicBucket;
-use crate::handler::pipeline::caching::models::CacheLevel;
-use crate::utils::counter::Counter;
+use crate::{
+    buckets::models::PublicBucket,
+    handler::pipeline::caching::models::CacheLevel,
+    utils::counter::Counter,
+};
 use hyper::Method;
-use std::sync::Arc;
-use std::time::Duration;
+use std::{
+    sync::Arc,
+    time::Duration,
+};
 
 /* 3: Rules!
    - Rules allows users to control traffic not from APIs. It acts on triggers and can perform actions.

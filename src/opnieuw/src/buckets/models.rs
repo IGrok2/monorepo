@@ -1,14 +1,26 @@
-use std::collections::hash_map::RandomState;
-use std::time::{Duration, Instant};
+use std::{
+    collections::hash_map::RandomState,
+    time::{
+        Duration,
+        Instant,
+    },
+};
 
-use dashmap::iter::Iter;
-use dashmap::DashMap;
+use dashmap::{
+    iter::Iter,
+    DashMap,
+};
 
-use crate::ip::models::IP;
-use crate::tls::models::TlsFingerprint;
-use crate::utils::counter::Counter;
-use crate::utils::cycle::Cycle;
-use crate::{debug, GA};
+use crate::{
+    debug,
+    ip::models::IP,
+    tls::models::TlsFingerprint,
+    utils::{
+        counter::Counter,
+        cycle::Cycle,
+    },
+    GA,
+};
 use std::sync::Arc;
 
 #[derive(Debug)]
@@ -43,8 +55,6 @@ pub struct BucketEntry {
 impl PublicBucket {
     pub fn new(name: String, id: String, threshold: u32, timeout: u32, check: bool) -> Arc<Self> {
         GA.bucket.public.new.inc();
-
-        
 
         Arc::new(PublicBucket {
             bucket: Arc::new(Bucket {

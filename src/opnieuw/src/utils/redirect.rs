@@ -1,8 +1,17 @@
-use crate::utils::resp::add_headers;
-use crate::{HttpResponse, EGRESS_HEADERS};
-use http_body_util::{BodyExt, Full};
-use hyper::body::Bytes;
-use hyper::{Response, StatusCode};
+use crate::{
+    utils::resp::add_headers,
+    HttpResponse,
+    EGRESS_HEADERS,
+};
+use http_body_util::{
+    BodyExt,
+    Full,
+};
+use hyper::{
+    body::Bytes,
+    Response,
+    StatusCode,
+};
 
 pub fn perform_redirect(to: &str) -> HttpResponse {
     let mut resp = Response::builder().status(StatusCode::TEMPORARY_REDIRECT);

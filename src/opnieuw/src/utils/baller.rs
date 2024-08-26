@@ -1,4 +1,8 @@
-use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::{
+    RwLock,
+    RwLockReadGuard,
+    RwLockWriteGuard,
+};
 
 pub struct BallerLock<T> {
     inner: RwLock<T>,

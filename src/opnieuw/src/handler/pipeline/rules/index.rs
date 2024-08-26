@@ -1,12 +1,29 @@
-use crate::{debug, GA};
+use crate::{
+    debug,
+    GA,
+};
 use std::ops::DerefMut;
 
-use crate::handler::pipeline::rules::actions::do_action;
-use crate::handler::pipeline::rules::detections::key_value::key_value;
-use crate::handler::pipeline::rules::detections::pure_strings::pure_string;
-use crate::handler::pipeline::rules::models::{TriggerRequirement, TriggerType};
-use crate::models::pipeline_response::PipelineResponse;
-use crate::models::request_context::{PipelineData, RequestContext};
+use crate::{
+    handler::pipeline::rules::{
+        actions::do_action,
+        detections::{
+            key_value::key_value,
+            pure_strings::pure_string,
+        },
+        models::{
+            TriggerRequirement,
+            TriggerType,
+        },
+    },
+    models::{
+        pipeline_response::PipelineResponse,
+        request_context::{
+            PipelineData,
+            RequestContext,
+        },
+    },
+};
 
 impl RequestContext {
     pub fn rules(&self, _data: &[PipelineData]) -> PipelineResponse {

@@ -1,12 +1,26 @@
-use crate::models::analytics_by_example::{
-    AnalyticsByExample, ApiEngineByExample, BotManagementByExample, CachingByExample, DomainStats,
-    GeneralByExample, HumanEngineByExample, ProxyByExample, RulesByExample,
+use crate::{
+    debug,
+    models::{
+        analytics_by_example::{
+            AnalyticsByExample,
+            ApiEngineByExample,
+            BotManagementByExample,
+            CachingByExample,
+            DomainStats,
+            GeneralByExample,
+            HumanEngineByExample,
+            ProxyByExample,
+            RulesByExample,
+        },
+        domain_context::DomainContext,
+    },
+    GA,
 };
-use crate::models::domain_context::DomainContext;
-use crate::{debug, GA};
 use clickhouse::Row;
-use serde::Deserialize;
-use serde::Serialize;
+use serde::{
+    Deserialize,
+    Serialize,
+};
 use std::time::Duration;
 use time::OffsetDateTime;
 use tokio::time::timeout;

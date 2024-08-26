@@ -1,7 +1,9 @@
 // administrative tasks that should be done every 10 seconds on the background thread
 
-use crate::buckets::global::GlobalRatelimitKeys;
-use crate::utils::cycle::Cycle;
+use crate::{
+    buckets::global::GlobalRatelimitKeys,
+    utils::cycle::Cycle,
+};
 
 pub async fn admin_tasks() {
     // now, complete any admin tasks

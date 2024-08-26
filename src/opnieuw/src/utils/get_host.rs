@@ -1,16 +1,29 @@
 // get host, either from the host header or the uri
 
-use crate::models::domain_context::DomainContext;
-use crate::templates::direct_ip::direct_ip_reject;
-use crate::templates::error::internal_error;
-use crate::utils::domains::is_domain;
-use crate::{HttpResponse, DOMAINS_DB};
+use crate::{
+    models::domain_context::DomainContext,
+    templates::{
+        direct_ip::direct_ip_reject,
+        error::internal_error,
+    },
+    utils::domains::is_domain,
+    HttpResponse,
+    DOMAINS_DB,
+};
 use http_body_util::combinators::BoxBody;
-use hyper::body::{Bytes, Incoming};
-use hyper::header::HOST;
-use hyper::{Request, Response};
-use std::io::Error;
-use std::sync::Arc;
+use hyper::{
+    body::{
+        Bytes,
+        Incoming,
+    },
+    header::HOST,
+    Request,
+    Response,
+};
+use std::{
+    io::Error,
+    sync::Arc,
+};
 
 pub fn get_host(req: &Request<Incoming>) -> Result<&str, HttpResponse> {
     match req.uri().host() {

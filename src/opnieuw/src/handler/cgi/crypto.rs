@@ -1,10 +1,21 @@
 use aes::Aes128;
 
-use crate::{debug, CHALLENGE_KEYS, GA};
-use aes_gcm::aead::consts::U12;
-use aes_gcm::aead::generic_array::GenericArray;
-use aes_gcm::aead::{Aead, AeadMut};
-use aes_gcm::{Aes128Gcm, AesGcm, KeyInit};
+use crate::{
+    debug,
+    CHALLENGE_KEYS,
+    GA,
+};
+use aes_gcm::{
+    aead::{
+        consts::U12,
+        generic_array::GenericArray,
+        Aead,
+        AeadMut,
+    },
+    Aes128Gcm,
+    AesGcm,
+    KeyInit,
+};
 use base64::Engine;
 
 impl ParsedChallengeResponse {

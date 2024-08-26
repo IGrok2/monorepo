@@ -16,14 +16,28 @@ What should be done in the background of these systems?
 // TODOS
 // 1: Remake clickhouse model
 
-use crate::threading::admin::admin_tasks;
-use crate::{DOMAINS_DB, GA, IPS};
-use std::time::{Duration, Instant};
-use tokio::runtime::{Handle, Runtime};
-use tokio::time;
+use crate::{
+    threading::admin::admin_tasks,
+    DOMAINS_DB,
+    GA,
+    IPS,
+};
+use std::time::{
+    Duration,
+    Instant,
+};
+use tokio::{
+    runtime::{
+        Handle,
+        Runtime,
+    },
+    time,
+};
 
-use crate::threading::banner::ips;
-use crate::threading::domain_analytics::index::do_domain_analytics;
+use crate::threading::{
+    banner::ips,
+    domain_analytics::index::do_domain_analytics,
+};
 
 pub async fn start_background_tasks() {
     // TODO: iterate through caching data, too

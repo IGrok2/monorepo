@@ -1,9 +1,25 @@
-use crate::handler::pipeline::rules::models::{Action, Monopoly, Trustbusting};
-use crate::models::domain_context::OriginType;
-use crate::models::pipeline_response::{PipelineResponse, Pipelines};
-use crate::models::request_context::{PipelineData, RequestContext};
-use crate::utils::redirect::perform_redirect;
-use crate::{debug, DOMAINS_DB, GA};
+use crate::{
+    debug,
+    handler::pipeline::rules::models::{
+        Action,
+        Monopoly,
+        Trustbusting,
+    },
+    models::{
+        domain_context::OriginType,
+        pipeline_response::{
+            PipelineResponse,
+            Pipelines,
+        },
+        request_context::{
+            PipelineData,
+            RequestContext,
+        },
+    },
+    utils::redirect::perform_redirect,
+    DOMAINS_DB,
+    GA,
+};
 use std::sync::Arc;
 
 pub fn do_action(ctx: &RequestContext, action: &Action) -> Option<PipelineResponse> {

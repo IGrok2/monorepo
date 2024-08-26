@@ -1,11 +1,26 @@
-use crate::ip::models::{IpData, ProtectedReferences, Token, NewTrafficType, IP};
-use crate::utils::counter::Counter;
-use crate::utils::cycle::Cycle;
-use crate::IPS;
-use std::net::Ipv4Addr;
-use std::ops::Deref;
-use std::str::FromStr;
-use std::sync::{Arc, RwLock};
+use crate::{
+    ip::models::{
+        IpData,
+        NewTrafficType,
+        ProtectedReferences,
+        Token,
+        IP,
+    },
+    utils::{
+        counter::Counter,
+        cycle::Cycle,
+    },
+    IPS,
+};
+use std::{
+    net::Ipv4Addr,
+    ops::Deref,
+    str::FromStr,
+    sync::{
+        Arc,
+        RwLock,
+    },
+};
 use tokio::task::AbortHandle;
 
 impl IP {

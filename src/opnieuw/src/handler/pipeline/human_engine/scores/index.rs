@@ -1,6 +1,8 @@
-use crate::debug;
-use crate::handler::pipeline::human_engine::models::HumanEngineMode;
-use crate::models::request_context::RequestContext;
+use crate::{
+    debug,
+    handler::pipeline::human_engine::models::HumanEngineMode,
+    models::request_context::RequestContext,
+};
 
 // Pipeline of scores
 

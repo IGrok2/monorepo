@@ -1,11 +1,15 @@
-use crate::buckets::global::GlobalRatelimitKeys;
-use crate::ip_data::models::IPAsnCountry;
-use crate::models::request_context::RequestContext;
+use crate::{
+    buckets::global::GlobalRatelimitKeys,
+    ip_data::models::IPAsnCountry,
+    models::request_context::RequestContext,
+};
 use std::ops::Index;
 
-use crate::ip::models::IpData;
-use crate::ip_data::index::get_ip_data;
-use crate::GA;
+use crate::{
+    ip::models::IpData,
+    ip_data::index::get_ip_data,
+    GA,
+};
 
 use crate::templates::error::internal_error;
 
@@ -28,9 +32,7 @@ impl RequestContext {
 
             if GlobalRatelimitKeys::IpLookups.is_allowed() {
                 for x in IP_DATA.iter() {
-                    if self.ip.socket_addr >= x.starting_ip
-                        && self.ip.socket_addr <= x.ending_ip
-                    {
+                    if self.ip.socket_addr >= x.starting_ip && self.ip.socket_addr <= x.ending_ip {
                         self.ip.set_data(IpData {
                             country: x.country.clone(),
                             continent: x.continent.clone(),

@@ -1,9 +1,21 @@
 use crate::GA;
 use actix_server::Server;
-use actix_web::{get, App, HttpServer, Responder};
+use actix_web::{
+    get,
+    App,
+    HttpServer,
+    Responder,
+};
 use lazy_static::lazy_static;
-use prometheus::core::{AtomicF64, GenericCounter};
-use prometheus::{Encoder, Registry, TextEncoder};
+use prometheus::{
+    core::{
+        AtomicF64,
+        GenericCounter,
+    },
+    Encoder,
+    Registry,
+    TextEncoder,
+};
 use std::sync::Arc;
 
 type PCounter = GenericCounter<AtomicF64>;

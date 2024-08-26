@@ -1,8 +1,12 @@
-use crate::models::request_context::PipelineData;
-use crate::HttpResponse;
+use crate::{
+    models::request_context::PipelineData,
+    HttpResponse,
+};
 use http_body_util::Full;
-use hyper::body::Bytes;
-use hyper::Response;
+use hyper::{
+    body::Bytes,
+    Response,
+};
 
 pub enum PipelineResponse {
     Ok(Option<Vec<PipelineData>>), // nothing needs to happen

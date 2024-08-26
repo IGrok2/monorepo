@@ -1,5 +1,7 @@
-use hyper::body::Incoming;
-use hyper::Response;
+use hyper::{
+    body::Incoming,
+    Response,
+};
 
 pub fn get_content_length(resp: &Response<Incoming>) -> u64 {
     for (i, v) in resp.headers() {

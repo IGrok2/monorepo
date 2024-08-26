@@ -1,5 +1,7 @@
-use crate::handler::pipeline::human_engine::scores::failsafe::models::Failsafe;
-use crate::utils::counter::Counter;
+use crate::{
+    handler::pipeline::human_engine::scores::failsafe::models::Failsafe,
+    utils::counter::Counter,
+};
 use dashmap::DashMap;
 use std::sync::Arc;
 

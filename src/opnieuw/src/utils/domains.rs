@@ -1,9 +1,11 @@
 use crate::TLDS;
 use hyper::Request;
-use std::fs::File;
-use std::io::Read;
-use std::process::Command;
-use std::rc::Rc;
+use std::{
+    fs::File,
+    io::Read,
+    process::Command,
+    rc::Rc,
+};
 
 pub fn is_domain(host: &str) -> bool {
     let split_up: Vec<&str> = host.split('.').collect();

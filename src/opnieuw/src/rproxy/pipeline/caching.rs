@@ -1,18 +1,38 @@
-use crate::buckets::private::PrivateKeys::CacheAttempted;
-use crate::cache_system::writer::CacheWriter;
-use crate::handler::pipeline::caching::models::CacheLevel;
-use crate::models::domain_context::DomainContext;
-use crate::models::egress_wrapper::EgressWrapper;
-use crate::models::request_context::{PipelineData, RequestContext};
-use crate::rproxy::pipeline::utils::get_content_length;
-use crate::{debug, GA};
+use crate::{
+    buckets::private::PrivateKeys::CacheAttempted,
+    cache_system::writer::CacheWriter,
+    debug,
+    handler::pipeline::caching::models::CacheLevel,
+    models::{
+        domain_context::DomainContext,
+        egress_wrapper::EgressWrapper,
+        request_context::{
+            PipelineData,
+            RequestContext,
+        },
+    },
+    rproxy::pipeline::utils::get_content_length,
+    GA,
+};
 use dashmap::DashMap;
-use hyper::body::Incoming;
-use hyper::header::{CACHE_CONTROL, SET_COOKIE};
-use hyper::{HeaderMap, Method, Response};
-use std::str::FromStr;
-use std::sync::Arc;
-use std::time::{Duration, Instant};
+use hyper::{
+    body::Incoming,
+    header::{
+        CACHE_CONTROL,
+        SET_COOKIE,
+    },
+    HeaderMap,
+    Method,
+    Response,
+};
+use std::{
+    str::FromStr,
+    sync::Arc,
+    time::{
+        Duration,
+        Instant,
+    },
+};
 
 impl RequestContext {
     /*
@@ -151,7 +171,8 @@ fn check_cache_headers(headers: &HeaderMap) -> Option<((bool, Option<Duration>),
                     resp = true;
 
                     ttl = Some(Duration::from_secs(
-                        val.split(", ").find(|val| val.starts_with("max-age="))
+                        val.split(", ")
+                            .find(|val| val.starts_with("max-age="))
                             .map(|max_age| {
                                 u64::from_str(max_age.trim_start_matches("max-age=")).unwrap_or(0)
                             })

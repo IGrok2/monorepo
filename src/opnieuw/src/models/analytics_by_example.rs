@@ -1,16 +1,31 @@
-use crate::buckets::models::PublicBucket;
-use crate::models::domain_context::DomainContext;
-use crate::models::request_context::RequestContext;
-use crate::tls::models::TlsFingerprint;
-use crate::utils::counter::Counter;
+use crate::{
+    buckets::models::PublicBucket,
+    models::{
+        domain_context::DomainContext,
+        request_context::RequestContext,
+    },
+    tls::models::TlsFingerprint,
+    utils::counter::Counter,
+};
 use clickhouse::Row;
 use dashmap::DashMap;
 use rand::prelude::*;
-use serde::{Deserialize, Serialize};
-use std::ops::{Deref, DerefMut};
-use std::rc::Rc;
-use std::sync::Arc;
-use std::time::{Duration, Instant};
+use serde::{
+    Deserialize,
+    Serialize,
+};
+use std::{
+    ops::{
+        Deref,
+        DerefMut,
+    },
+    rc::Rc,
+    sync::Arc,
+    time::{
+        Duration,
+        Instant,
+    },
+};
 
 #[derive(Clone, Debug)]
 pub struct AnalyticsByExample {

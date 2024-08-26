@@ -1,49 +1,101 @@
-use std::collections::HashMap;
-use std::error::Error;
-use std::io::{BufReader, Cursor};
-use std::iter;
-use std::ops::DerefMut;
+use std::{
+    collections::HashMap,
+    error::Error,
+    io::{
+        BufReader,
+        Cursor,
+    },
+    iter,
+    ops::DerefMut,
+};
 
-use crate::buckets::models::PublicBucket;
-use crate::cache_system::models::CacheBucket;
-use crate::grpc::all::{
-    ApiEngineSettings as RpcApiEngineSettings, AppOriginSetting as RpcAppOriginSetting,
-    AppOriginSetting, BotSettings as RpcBotSettings, BucketSettings as RpcBucketSettings,
-    CachingSettings as RpcCachingSettings, Cert as RpcCert, HumanEngine as RpcHumanEngine,
-    InternalSettings as RpcInternalSettings, OriginSetting as RpcOriginSetting,
-    PageRules as RpcPageRules,
+use crate::{
+    buckets::models::PublicBucket,
+    cache_system::models::CacheBucket,
+    debug,
+    grpc::all::{
+        ApiEngineSettings as RpcApiEngineSettings,
+        AppOriginSetting as RpcAppOriginSetting,
+        AppOriginSetting,
+        BotSettings as RpcBotSettings,
+        BucketSettings as RpcBucketSettings,
+        CachingSettings as RpcCachingSettings,
+        Cert as RpcCert,
+        HumanEngine as RpcHumanEngine,
+        InternalSettings as RpcInternalSettings,
+        OriginSetting as RpcOriginSetting,
+        PageRules as RpcPageRules,
+    },
+    handler::pipeline::{
+        api_engine::models::{
+            Action,
+            ApiEngineSettings,
+            Method,
+            Rule,
+            Setting,
+            TriggerType,
+            WebMethods,
+            WhitelistFactors,
+            WsMethods,
+        },
+        bot_management::models::Bots,
+        caching::models::CacheLevel,
+        human_engine::{
+            models::{
+                HumanEngine,
+                HumanEngineMode,
+                InternalCounters,
+            },
+            scores::failsafe::models::Failsafe,
+        },
+        rules,
+        rules::models::{
+            Match,
+            MatchType,
+            Monopoly,
+            Rule as PageRule,
+            Trigger,
+            TriggerRequirement,
+            TriggerType as RuleTriggerType,
+            Trustbusting,
+        },
+    },
+    models::{
+        domain_context::{
+            AppSettings,
+            BotManagementSettings,
+            CachingSettings,
+            InternalSettings,
+            OriginSetting,
+            OriginSettings,
+            OriginType,
+            RulesSettings,
+        },
+        regions::Region,
+    },
+    utils::counter::Counter,
+    CERTS,
+    WILDCARD_CERT,
 };
-use crate::handler::pipeline::api_engine::models::{
-    Action, ApiEngineSettings, Method, Rule, Setting, TriggerType, WebMethods, WhitelistFactors,
-    WsMethods,
-};
-use crate::handler::pipeline::bot_management::models::Bots;
-use crate::handler::pipeline::caching::models::CacheLevel;
-use crate::handler::pipeline::human_engine::models::{
-    HumanEngine, HumanEngineMode, InternalCounters,
-};
-use crate::handler::pipeline::human_engine::scores::failsafe::models::Failsafe;
-use crate::handler::pipeline::rules;
-use crate::handler::pipeline::rules::models::{
-    Match, MatchType, Monopoly, Rule as PageRule, Trigger, TriggerRequirement,
-    TriggerType as RuleTriggerType, Trustbusting,
-};
-use crate::models::domain_context::{
-    AppSettings, BotManagementSettings, CachingSettings, InternalSettings, OriginSetting,
-    OriginSettings, OriginType, RulesSettings,
-};
-use crate::models::regions::Region;
-use crate::utils::counter::Counter;
-use crate::{debug, CERTS, WILDCARD_CERT};
 use dashmap::DashMap;
 use hyper::http::Method as HyperMethod;
-use rustls_pemfile::{read_one, Item};
-use std::str::FromStr;
-use std::sync::Arc;
-use std::time::Duration;
+use rustls_pemfile::{
+    read_one,
+    Item,
+};
+use std::{
+    str::FromStr,
+    sync::Arc,
+    time::Duration,
+};
 use tokio::sync::RwLock;
-use tokio_rustls::rustls;
-use tokio_rustls::rustls::sign::{CertifiedKey, RsaSigningKey};
+use tokio_rustls::{
+    rustls,
+    rustls::sign::{
+        CertifiedKey,
+        RsaSigningKey,
+    },
+};
 use url::Url;
 
 pub struct RpcToRust {}

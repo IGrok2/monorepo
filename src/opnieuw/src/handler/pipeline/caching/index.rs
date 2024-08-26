@@ -1,20 +1,35 @@
 // respond with HIT if we respond to hit here, then respond with either MISS or INVALID as we get response back from backend
 // to determine how cachable the resource is
 
-use crate::cache_system::reader::CacheReader;
-use crate::handler::pipeline::caching::models::CacheLevel;
-use crate::handler::pipeline::human_engine::smart_challenge::CookieTester;
-use crate::models::pipeline_response::PipelineResponse;
-use crate::models::request_context::{PipelineData, RequestContext};
-use crate::{EGRESS_HEADERS, GA};
+use crate::{
+    cache_system::reader::CacheReader,
+    handler::pipeline::{
+        caching::models::CacheLevel,
+        human_engine::smart_challenge::CookieTester,
+    },
+    models::{
+        pipeline_response::PipelineResponse,
+        request_context::{
+            PipelineData,
+            RequestContext,
+        },
+    },
+    EGRESS_HEADERS,
+    GA,
+};
 use http_body_util::BodyExt;
-use hyper::header::CONTENT_LENGTH;
-use hyper::http::request::Builder;
-use hyper::{Response, StatusCode};
+use hyper::{
+    header::CONTENT_LENGTH,
+    http::request::Builder,
+    Response,
+    StatusCode,
+};
 use std::time::Instant;
 // use crate::rproxy::pipeline::compression::compress_zip;
-use crate::templates::error::internal_error;
-use crate::utils::resp::add_headers;
+use crate::{
+    templates::error::internal_error,
+    utils::resp::add_headers,
+};
 
 impl RequestContext {
     // TODO: fix cache miss header on egress
