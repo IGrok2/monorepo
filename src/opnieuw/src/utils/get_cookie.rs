@@ -6,9 +6,9 @@ impl RequestContext {
 
         let cookie = cookie.to_str().ok()?;
 
-        let cookie = cookie.split(";").find(|c| c.contains(name))?;
+        let cookie = cookie.split(';').find(|c| c.contains(name))?;
 
-        let cookie = cookie.split("=").skip(1).collect::<Vec<&str>>().join("=");
+        let cookie = cookie.split('=').skip(1).collect::<Vec<&str>>().join("=");
 
         Some(cookie)
     }
@@ -21,8 +21,8 @@ impl RequestContext {
 
         // get all cookies with names Vec<(String, String)>
         let cookie_names = cookie
-            .split(";")
-            .map(|c| c.split("=").collect::<Vec<&str>>())
+            .split(';')
+            .map(|c| c.split('=').collect::<Vec<&str>>())
             .collect::<Vec<Vec<&str>>>();
 
         Some(cookie_names)

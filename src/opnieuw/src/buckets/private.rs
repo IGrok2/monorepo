@@ -31,7 +31,14 @@ pub enum PrivateKeys {
 
 impl Display for PrivateKeys {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self)
+        match self {
+            PrivateKeys::ExpectedPassed => write!(f, "ExpectedPassed"),
+            PrivateKeys::ServerMessages => write!(f, "ServerMessages"),
+            PrivateKeys::AllowedWsMessages => write!(f, "AllowedWsMessages"),
+            PrivateKeys::CacheAttempted => write!(f, "CacheAttempted"),
+            PrivateKeys::AllBots => write!(f, "AllBots"),
+            PrivateKeys::BotKey(b) => write!(f, "BotKey: {:?}", b),
+        }
     }
 }
 

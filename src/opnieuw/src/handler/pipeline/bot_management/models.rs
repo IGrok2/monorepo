@@ -9,7 +9,11 @@ pub enum Bots {
 
 impl Display for Bots {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self)
+        match self {
+            Bots::Googlebot => write!(f, "Googlebot"),
+            Bots::Bingbot => write!(f, "Bingbot"),
+            Bots::UptimeRobot => write!(f, "UptimeRobot"),
+        }
     }
 }
 

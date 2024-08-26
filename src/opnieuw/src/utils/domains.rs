@@ -6,7 +6,7 @@ use std::process::Command;
 use std::rc::Rc;
 
 pub fn is_domain(host: &str) -> bool {
-    let split_up: Vec<&str> = host.split(".").collect();
+    let split_up: Vec<&str> = host.split('.').collect();
     for i in TLDS.iter() {
         if i == &split_up[split_up.len() - 1].to_lowercase() {
             return true; // then it's actually a domain
@@ -43,11 +43,11 @@ pub fn get_tld_list() -> Vec<String> {
         .read_to_string(&mut data)
         .expect("couldn't read file to string");
 
-    let new_data = data.split("\n");
+    let new_data = data.split('\n');
 
     for i in new_data {
         // get each newline
-        if !i.contains("#") {
+        if !i.contains('#') {
             // ignore comments
             tlds.push(i.to_lowercase())
         }

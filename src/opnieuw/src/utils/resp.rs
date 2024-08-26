@@ -28,7 +28,7 @@ pub fn resp(body: &str, status: Option<StatusCode>, no_store: bool) -> HttpRespo
 
 pub fn add_headers(headers: &mut HeaderMap) {
     // elided lifetimes
-    for (_n, i) in EGRESS_HEADERS.iter().enumerate() {
+    for i in EGRESS_HEADERS.iter() {
         // thanks to .enum, n is the index and i is the value
         // before, when we set the value to it, we needed this to return it, now we don't!
         // if n == EGRESS_HEADERS.len() - 1 { // last entry

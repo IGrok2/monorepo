@@ -13,13 +13,13 @@ use std::io::Error;
 use std::sync::Arc;
 
 pub fn get_host(req: &Request<Incoming>) -> Result<&str, HttpResponse> {
-    match req.uri().host().clone() {
+    match req.uri().host() {
         Some(t) => Ok(t),
         None => match req.headers().get(HOST) {
             Some(t) => match t.to_str() {
                 Ok(t) => {
                     if !is_domain(t) {
-                        return Err(direct_ip_reject());
+                        Err(direct_ip_reject())
                     } else {
                         Ok(t)
                     }
@@ -44,5 +44,5 @@ pub fn get_host_db(host: &str) -> Option<Arc<DomainContext>> {
         }
     }
 
-    return None;
+    None
 }
