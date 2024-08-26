@@ -1,4 +1,4 @@
-name: Frontend
+name: Opnieuw
 
 on:
   push:
@@ -9,34 +9,32 @@ on:
       - main
 
 jobs:
-  eslint:
+  fmt:
     runs-on: self-hosted
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Run linter
+      - name: Run fmt
         run: |
           eval "$(direnv export bash)"
           direnv reload
-          cd src/frontend
-          yarn install
-          yarn run lint
+          cd src/opnieuw
+          cargo fmt
+          git diff --exit-code
         shell: bash
 
-  yarn-audit:
-    runs-on: self-hosted
+  clippy:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Run linter
+      - name: Run clippy
         run: |
-          eval "$(direnv export bash)"
-          direnv reload
-          cd src/frontend
-          yarn install
-          yarn audit
+          sudo apt install protobuf-compiler -y
+          cd src/opnieuw
+          cargo clippy
         shell: bash

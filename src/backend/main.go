@@ -1,4 +1,4 @@
-package main // packetware.net/backend/src
+package main
 
 import (
 	"net/http"
@@ -20,5 +20,9 @@ func main() {
 		})
 	})
 
-	router.Run() // listen and serve on 0.0.0.0:8080
+	err := router.Run() // listen and serve on 0.0.0.0:8080
+
+	if err != nil {
+		println(err)
+	}
 }

@@ -51,7 +51,7 @@
         } else {
             toast.error(res.message);
         }
-        
+
         window.location.reload();
     }
 </script>

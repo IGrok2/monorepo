@@ -1,7 +1,7 @@
 <script>
     import { Checkbox } from "$lib/components/ui/checkbox";
     import { Separator } from "$lib/components/ui/separator";
-    
+
     export let regions = [
         {
             id: "LAX",

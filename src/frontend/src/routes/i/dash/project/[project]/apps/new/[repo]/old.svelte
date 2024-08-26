@@ -19,7 +19,7 @@
         </div>
     </div>
 
-    <!-- Location 
+    <!-- Location
             <div>
                 <h2 class="text-base font-semibold leading-7">Location</h2>
                 <p class="mt-1 text-sm leading-6 text-muted-foreground">

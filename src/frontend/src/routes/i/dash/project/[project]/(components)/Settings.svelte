@@ -34,7 +34,7 @@
     <Card.Header>
         <Card.Title>Manage Github Install</Card.Title>
         <Card.Description>
-            This can be used to change the permissions of what this 
+            This can be used to change the permissions of what this
             Packetware app can access in your Github repositories.
         </Card.Description>
     </Card.Header>

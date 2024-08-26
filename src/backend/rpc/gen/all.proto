@@ -4,7 +4,7 @@
 
 syntax = "proto3";
 
-option go_package = "packetware.net/api/rpc";
+option go_package = "packetware/api/rpc";
 
 service BigBaller {
   // on startup message, includes all domains

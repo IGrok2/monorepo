@@ -33,7 +33,7 @@
         },
     ];
 </script>
-<!-- 
+<!--
 <div class="space-y-6 p-10 pb-16 md:block">
 	<div class="space-y-0.5">
 		<h2 class="text-4xl font-bold">Settings</h2>

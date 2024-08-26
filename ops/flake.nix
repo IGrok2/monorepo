@@ -47,7 +47,13 @@
             # for opnieuw
             rustc
             cargo
+            rustup
           ];
+
+          shellHook = ''
+            rustup default nightly
+            rustup component add clippy
+          '';
         };
       });
     };

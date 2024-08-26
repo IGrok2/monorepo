@@ -1,4 +1,4 @@
-package models // packetware.net/backend/src/models
+package models
 
 import (
 	"gorm.io/gorm"

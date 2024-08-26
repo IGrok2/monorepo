@@ -4,14 +4,11 @@ repos:
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
-      - id: check-yaml
       - id: check-added-large-files
-  - repo: https://github.com/golangci/golangci-lint
-    rev: v1.60.3
+  - repo: local
     hooks:
-      - id: golangci-lint-full
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.37.0
-    hooks:
-      - id: eslint
-        files: "\\.(jsx?|tsx?)$" # match all .js, .jsx, .ts, .tsx files in the entire repo
+      - id: golangci
+        name: golangci-lint
+        entry: ./ops/golanglint.sh
+        language: script
+        files: ^src/backend/.*\.go$

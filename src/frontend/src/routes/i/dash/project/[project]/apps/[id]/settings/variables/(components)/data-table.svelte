@@ -120,7 +120,7 @@
 		});
 		let deleted = response.data;
 		console.log(deleted);
-		
+
 		console.log(data);
 
 		if (deleted.success === true) {
@@ -133,7 +133,7 @@
 		console.log(data)
 
 		toast.error(deleted.message);
-		
+
 		window.location.reload();
 	}
 </script>
