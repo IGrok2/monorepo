@@ -34,9 +34,7 @@ jobs:
 
       - name: Run clippy
         run: |
-          sudo apt install direnv -y
-          eval "$(direnv export bash)"
-          direnv reload
+          sudo apt install protobuf-compiler -y
           cd src/opnieuw
           cargo clippy
         shell: bash
