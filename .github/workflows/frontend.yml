@@ -16,14 +16,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: direnv load
-        run: direnv allow
-
-      - name: Run pre-commit checks
+      - name: Run linter
         run: |
-          cd src/frontend
+          eval "$(direnv export bash)"
+          direnv reload
+          yarn install
           yarn run lint
-          git diff --exit-code
+        shell: bash
 
   npm-audit:
     runs-on: self-hosted
@@ -32,10 +31,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: direnv load
-        run: direnv allow
-
-      - name: yarn audit
+      - name: Run linter
         run: |
-          cd src/frontend
+          eval "$(direnv export bash)"
+          direnv reload
+          yarn install
           yarn audit
+        shell: bash
