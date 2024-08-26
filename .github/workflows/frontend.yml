@@ -24,7 +24,7 @@ jobs:
       - name: Run pre-commit checks
         run: |
           cd src/frontend
-          eslint --fix .
+          yarn run lint
           git diff --exit-code
 
   npm-audit:

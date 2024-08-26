@@ -24,6 +24,7 @@ jobs:
       - name: WriteGoList
         run: |
           cd src/backend
+          ls -a
           go list -json -m all > go.list
 
       - name: Nancy
@@ -43,7 +44,9 @@ jobs:
 
       - name: Generate gRPC code
         run: |
+          ls -a
           cd src/backend
+          ls -a
           protoc --go_out=. --go-grpc_out=. \
             --go_opt=paths=source_relative \
             --go-grpc_opt=paths=source_relative \
