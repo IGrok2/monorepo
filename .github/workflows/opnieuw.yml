@@ -34,6 +34,7 @@ jobs:
 
       - name: Run clippy
         run: |
+          apt install direnv -y
           eval "$(direnv export bash)"
           direnv reload
           cd src/opnieuw
