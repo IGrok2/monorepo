@@ -226,7 +226,7 @@
                 </Popover.Content>
             </Popover.Root>
         </div>
-        <!-- 
+        <!--
         <Card.Content class="space-y-2">
             <Input bind:value={search} placeholder="search" />
             {#each installs as install}

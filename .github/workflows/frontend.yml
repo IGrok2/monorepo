@@ -10,7 +10,7 @@ on:
 
 jobs:
   eslint:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -24,6 +24,7 @@ jobs:
       - name: Run pre-commit checks
         run: |
           cd src/frontend
+          yarn install
           eslint --fix .
           git diff --exit-code
 

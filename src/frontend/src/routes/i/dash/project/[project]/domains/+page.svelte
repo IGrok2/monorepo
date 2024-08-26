@@ -526,7 +526,7 @@
                                             >Add Domain</button
                                         >
                                     </div>
-                                </form> 
+                                </form>
                             </div>
                         </div>
                     </div>

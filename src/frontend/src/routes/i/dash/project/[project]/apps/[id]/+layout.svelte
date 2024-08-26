@@ -1,6 +1,6 @@
 <script>
     import { page } from "$app/stores";
-    
+
     import { Separator } from "$lib/components/ui/separator";
 
     import TopNav from "$lib/components/TopNav.svelte";
@@ -53,7 +53,7 @@
         },
     ];
 </script>
-<!-- 
+<!--
 <TopNav items={items} />
 
 <slot />

@@ -236,7 +236,7 @@
                 <p class="uppercase text-gray-300">at a glance</p>
                 <p class="text-slate-200 text-xl">API engine has handled 239,392 requests</p>
             </div> -->
-    
+
     <div class="flex items-center justify-between">
         <p class="uppercase text-muted-foreground">Human Engine</p>
     <div class="md:flex md:items-center md:justify-between">
@@ -321,7 +321,7 @@
                 </p>
             </div>
         </div>
-        
+
         <div class="my-4 space-y-4">
             <Card.Root>
                 <Card.Header>

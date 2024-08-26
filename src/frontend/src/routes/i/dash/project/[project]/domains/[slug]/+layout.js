@@ -36,7 +36,7 @@ export async function load({ params }) {
     } catch (error) {
         console.log("Error fetching project brief: ", error);
     }
-    
+
     try {
         const response = await fetch(`${PUBLIC_API}/@/project/${params.project}/domain/${params.slug}`, {
             method: "GET",
