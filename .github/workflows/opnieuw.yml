@@ -20,6 +20,7 @@ jobs:
         run: |
           eval "$(direnv export bash)"
           direnv reload
+          cd src/opnieuw
           cargo fmt
           git diff --exit-code
         shell: bash
@@ -35,5 +36,6 @@ jobs:
         run: |
           eval "$(direnv export bash)"
           direnv reload
+          cd src/opnieuw
           cargo clippy
         shell: bash
