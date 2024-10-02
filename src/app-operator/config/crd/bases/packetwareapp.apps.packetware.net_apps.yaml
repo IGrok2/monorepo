@@ -39,8 +39,6 @@ spec:
           spec:
             description: AppSpec defines the desired state of App
             properties:
-              appType:
-                type: string
               args:
                 items:
                   type: string
@@ -162,9 +160,32 @@ spec:
                 type: string
               image:
                 type: string
+              locations:
+                items:
+                  properties:
+                    replicaSpec:
+                      properties:
+                        max:
+                          format: int32
+                          type: integer
+                        min:
+                          format: int32
+                          type: integer
+                      required:
+                      - max
+                      - min
+                      type: object
+                    tag:
+                      type: string
+                  required:
+                  - replicaSpec
+                  - tag
+                  type: object
+                type: array
               ports:
                 items:
-                  description: ServicePort contains information on service's port.
+                  description: PortConfig defines the structure of a port, including
+                    its privacy status
                   properties:
                     appProtocol:
                       description: |-
@@ -212,6 +233,8 @@ spec:
                       description: The port that will be exposed by this service.
                       format: int32
                       type: integer
+                    private:
+                      type: boolean
                     protocol:
                       default: TCP
                       description: |-
@@ -259,9 +282,6 @@ spec:
                 - registryType
                 - url
                 type: object
-              replicas:
-                format: int32
-                type: integer
               resources:
                 description: ResourceRequirements describes the compute resource requirements.
                 properties:
@@ -330,10 +350,9 @@ spec:
                   type: object
                 type: array
             required:
-            - appType
             - image
+            - locations
             - ports
-            - replicas
             type: object
           status:
             description: AppStatus defines the observed state of App
