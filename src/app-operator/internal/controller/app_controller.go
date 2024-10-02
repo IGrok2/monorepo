@@ -55,12 +55,6 @@ type AppReconciler struct {
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
 
-const (
-	DefaultRegistryURL      = "https://registry.aqueous.cloud"
-	DefaultRegistryUsername = "apps"
-	DefaultRegistryPassword = "38U7j3qaozMtTS"
-)
-
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
@@ -83,21 +77,6 @@ func (r *AppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		return ctrl.Result{}, err
 	}
 
-	// Use default registry credentials if not specified
-	registryURL := DefaultRegistryURL
-	registryUsername := DefaultRegistryUsername
-	registryPassword := DefaultRegistryPassword
-
-	if app.Spec.Registry.URL != "" {
-		registryURL = app.Spec.Registry.URL
-	}
-	if app.Spec.Registry.Auth.Username != "" {
-		registryUsername = app.Spec.Registry.Auth.Username
-	}
-	if app.Spec.Registry.Auth.Password != "" {
-		registryPassword = app.Spec.Registry.Auth.Password
-	}
-
 	// Create imagePullSecret
 	imagePullSecretName := app.Name + "-registry-secret"
 	imagePullSecret := &corev1.Secret{
@@ -115,8 +94,8 @@ func (r *AppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 							"auth": "%s"
 						}
 					}
-				}`, registryURL, registryUsername, registryPassword,
-				base64.StdEncoding.EncodeToString([]byte(registryUsername+":"+registryPassword)))),
+				}`, app.Spec.Registry.URL, app.Spec.Registry.Auth.Username, app.Spec.Registry.Auth.Password,
+				base64.StdEncoding.EncodeToString([]byte(app.Spec.Registry.Auth.Username+":"+app.Spec.Registry.Auth.Password)))),
 		},
 	}
 
