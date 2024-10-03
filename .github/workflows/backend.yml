@@ -10,9 +10,11 @@ on:
 
 jobs:
   protoc:
-    runs-on: self-hosted
-
+    runs-on: ubuntu-latest 
     steps:
+      - name: Install direnv
+        run: sudo apt-get update && sudo apt-get install -y direnv
+
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
 
