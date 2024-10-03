@@ -10,8 +10,7 @@ on:
 
 jobs:
   fmt:
-    runs-on: self-hosted
-
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -27,7 +26,6 @@ jobs:
 
   clippy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
