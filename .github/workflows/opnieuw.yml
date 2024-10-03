@@ -12,6 +12,9 @@ jobs:
   fmt:
     runs-on: ubuntu-latest
     steps:
+      - name: Install direnv
+        run: sudo apt-get update && sudo apt-get install -y direnv
+
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -27,6 +30,9 @@ jobs:
   clippy:
     runs-on: ubuntu-latest
     steps:
+      - name: Install direnv
+        run: sudo apt-get update && sudo apt-get install -y direnv
+
       - name: Checkout
         uses: actions/checkout@v2
 
