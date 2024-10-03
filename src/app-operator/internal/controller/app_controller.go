@@ -155,9 +155,9 @@ func (r *AppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		containerPorts := []corev1.ContainerPort{}
 		for _, portConfig := range app.Spec.Ports {
 			containerPort := corev1.ContainerPort{
-				//Name:          portConfig.Name,
+				Name:          portConfig.Name,
 				ContainerPort: portConfig.Port,
-				//Protocol:      corev1.Protocol(portConfig.Protocol),
+				Protocol:      corev1.Protocol(portConfig.Protocol),
 			}
 			containerPorts = append(containerPorts, containerPort)
 		}

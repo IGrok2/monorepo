@@ -4,5 +4,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: registry.aqueous.cloud/public/app-operator
-  newTag: 0.0.28
+  newName: registry.anchored.host/public/app-operator
+  newTag: 0.1.11
