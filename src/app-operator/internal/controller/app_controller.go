@@ -24,13 +24,11 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
-	v1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types" // get intstr
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -57,12 +55,6 @@ type AppReconciler struct {
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
 
-const (
-	DefaultRegistryURL      = "https://registry.aqueous.cloud"
-	DefaultRegistryUsername = "apps"
-	DefaultRegistryPassword = "38U7j3qaozMtTS"
-)
-
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
@@ -85,21 +77,6 @@ func (r *AppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		return ctrl.Result{}, err
 	}
 
-	// Use default registry credentials if not specified
-	registryURL := DefaultRegistryURL
-	registryUsername := DefaultRegistryUsername
-	registryPassword := DefaultRegistryPassword
-
-	if app.Spec.Registry.URL != "" {
-		registryURL = app.Spec.Registry.URL
-	}
-	if app.Spec.Registry.Auth.Username != "" {
-		registryUsername = app.Spec.Registry.Auth.Username
-	}
-	if app.Spec.Registry.Auth.Password != "" {
-		registryPassword = app.Spec.Registry.Auth.Password
-	}
-
 	// Create imagePullSecret
 	imagePullSecretName := app.Name + "-registry-secret"
 	imagePullSecret := &corev1.Secret{
@@ -117,8 +94,8 @@ func (r *AppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 							"auth": "%s"
 						}
 					}
-				}`, registryURL, registryUsername, registryPassword,
-				base64.StdEncoding.EncodeToString([]byte(registryUsername+":"+registryPassword)))),
+				}`, app.Spec.Registry.URL, app.Spec.Registry.Auth.Username, app.Spec.Registry.Auth.Password,
+				base64.StdEncoding.EncodeToString([]byte(app.Spec.Registry.Auth.Username+":"+app.Spec.Registry.Auth.Password)))),
 		},
 	}
 
@@ -148,201 +125,89 @@ func (r *AppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		}
 	}
 
-	// Create a slice to hold the volume mounts
-	volumeMounts := []corev1.VolumeMount{}
-	volumes := []corev1.Volume{}
+	for _, locationConfig := range app.Spec.Locations {
+		appLocationName := app.Name + "-" + locationConfig.Tag
 
-	// Add each volume to the volumes and volumeMounts slices
-	for _, volumeConfig := range app.Spec.Volumes {
-		volume := corev1.Volume{
-			Name: volumeConfig.Name,
-			VolumeSource: corev1.VolumeSource{
-				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-					ClaimName: volumeConfig.Name,
-				},
-			},
-		}
-		volumes = append(volumes, volume)
+		// Create a slice to hold the volume mounts
+		volumeMounts := []corev1.VolumeMount{}
+		volumes := []corev1.Volume{}
 
-		volumeMount := corev1.VolumeMount{
-			Name:      volumeConfig.Name,
-			MountPath: volumeConfig.MountPath,
-		}
-		volumeMounts = append(volumeMounts, volumeMount)
-	}
-
-	// Create a slice to hold the container ports
-	containerPorts := []corev1.ContainerPort{}
-	for _, portConfig := range app.Spec.Ports {
-		containerPort := corev1.ContainerPort{
-			//Name:          portConfig.Name,
-			ContainerPort: portConfig.Port,
-			//Protocol:      corev1.Protocol(portConfig.Protocol),
-		}
-		containerPorts = append(containerPorts, containerPort)
-	}
-
-	// Define the desired Deployment object
-	deploy := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      app.Name,
-			Namespace: app.Namespace,
-		},
-		Spec: appsv1.DeploymentSpec{
-			Replicas: &app.Spec.Replicas,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{"app": app.Name},
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"app": app.Name},
-				},
-				Spec: corev1.PodSpec{
-					ImagePullSecrets: []corev1.LocalObjectReference{
-						{
-							Name: imagePullSecretName,
-						},
+		// Add each volume to the volumes and volumeMounts slices
+		for _, volumeConfig := range app.Spec.Volumes {
+			volume := corev1.Volume{
+				Name: volumeConfig.Name,
+				VolumeSource: corev1.VolumeSource{
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: volumeConfig.Name,
 					},
-					Containers: []corev1.Container{
-						{
-							Name:         "app",
-							Image:        app.Spec.Image,
-							Args:         app.Spec.Args,
-							Resources:    app.Spec.Resources,
-							Ports:        containerPorts,
-							Env:          app.Spec.Env,
-							VolumeMounts: volumeMounts,
-						},
-					},
-					Volumes: volumes,
 				},
-			},
-		},
-	}
+			}
+			volumes = append(volumes, volume)
 
-	// Set App instance as the owner and controller
-	if err := controllerutil.SetControllerReference(app, deploy, r.Scheme); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	// Check if the Deployment already exists
-	found := &appsv1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
-	if err != nil && errors.IsNotFound(err) {
-		log.Info("Creating a new Deployment", "Deployment.Namespace", deploy.Namespace, "Deployment.Name", deploy.Name)
-		err = r.Create(ctx, deploy)
-		if err != nil {
-			return ctrl.Result{}, err
+			volumeMount := corev1.VolumeMount{
+				Name:      volumeConfig.Name,
+				MountPath: volumeConfig.MountPath,
+			}
+			volumeMounts = append(volumeMounts, volumeMount)
 		}
-	} else if err != nil {
-		return ctrl.Result{}, err
-	} else {
-		// Update the existing Deployment
-		found.Spec = deploy.Spec
-		log.Info("Updating Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
-		err = r.Update(ctx, found)
-		if err != nil {
-			return ctrl.Result{}, err
+
+		// Create a slice to hold the container ports
+		containerPorts := []corev1.ContainerPort{}
+		for _, portConfig := range app.Spec.Ports {
+			containerPort := corev1.ContainerPort{
+				Name:          portConfig.Name,
+				ContainerPort: portConfig.Port,
+				Protocol:      corev1.Protocol(portConfig.Protocol),
+			}
+			containerPorts = append(containerPorts, containerPort)
 		}
-	}
 
-	// Call the functi// Call the function to reconcile the NetworkPolicy
-	if err := r.reconcileNetworkPolicy(ctx, log, app); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	serviceType := corev1.ServiceTypeNodePort
-	if app.Spec.Private {
-		serviceType = corev1.ServiceTypeClusterIP
-	}
-
-	svc := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      app.Name,
-			Namespace: app.Namespace,
-			Labels:    map[string]string{"app": app.Name},
-		},
-		Spec: corev1.ServiceSpec{
-			Selector: map[string]string{"app": app.Name},
-			Ports:    app.Spec.Ports,
-			Type:     serviceType,
-		},
-	}
-
-	// Set App instance as the owner and controller
-	if err := controllerutil.SetControllerReference(app, svc, r.Scheme); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	// Check if the Service already exists
-	foundSvc := &corev1.Service{}
-	err = r.Get(ctx, types.NamespacedName{Name: svc.Name, Namespace: svc.Namespace}, foundSvc)
-	if err != nil && errors.IsNotFound(err) {
-		log.Info("Creating a new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
-		err = r.Create(ctx, svc)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-	} else if err != nil {
-		return ctrl.Result{}, err
-	} else {
-		// Update the existing Service
-		foundSvc.Spec = svc.Spec
-		log.Info("Updating Service", "Service.Namespace", foundSvc.Namespace, "Service.Name", foundSvc.Name)
-		err = r.Update(ctx, foundSvc)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-	}
-
-	if app.Spec.AppType == "HTTP" {
-		host1 := app.Name + ".onpacketware.net"
-		host2 := app.Name + ".app.aqueous.cloud"
-		port := networkingv1.ServiceBackendPort{
-			Number: app.Spec.Ports[0].Port,
-		}
-		pathType := networkingv1.PathTypePrefix
-
-		ingress := &networkingv1.Ingress{
+		// Define the desired Deployment object
+		deploy := &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      app.Name,
+				Name:      appLocationName,
 				Namespace: app.Namespace,
-				Labels:    map[string]string{"app": app.Name},
+				Labels:    map[string]string{"app": app.Name, "instance": appLocationName},
 			},
-			Spec: networkingv1.IngressSpec{
-				IngressClassName: pointer.String("nginx"),
-				Rules: []networkingv1.IngressRule{
-					{
-						Host: host1,
-						IngressRuleValue: networkingv1.IngressRuleValue{
-							HTTP: &networkingv1.HTTPIngressRuleValue{
-								Paths: []networkingv1.HTTPIngressPath{
-									{
-										Path:     "/",
-										PathType: &pathType,
-										Backend: networkingv1.IngressBackend{
-											Service: &networkingv1.IngressServiceBackend{
-												Name: svc.Name,
-												Port: port,
-											},
-										},
-									},
-								},
+			Spec: appsv1.DeploymentSpec{
+				Replicas: &locationConfig.Replicas.Min,
+				Selector: &metav1.LabelSelector{
+					MatchLabels: map[string]string{"instance": appLocationName},
+				},
+				Template: corev1.PodTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels:      map[string]string{"app": app.Name, "instance": appLocationName},
+						Annotations: map[string]string{"kubernetes.io/ingress-bandwidth": "2G", "kubernetes.io/egress-bandwidth": "2G"},
+					},
+					Spec: corev1.PodSpec{
+						ImagePullSecrets: []corev1.LocalObjectReference{
+							{
+								Name: imagePullSecretName,
 							},
 						},
-					},
-					{
-						Host: host2,
-						IngressRuleValue: networkingv1.IngressRuleValue{
-							HTTP: &networkingv1.HTTPIngressRuleValue{
-								Paths: []networkingv1.HTTPIngressPath{
-									{
-										Path:     "/",
-										PathType: &pathType,
-										Backend: networkingv1.IngressBackend{
-											Service: &networkingv1.IngressServiceBackend{
-												Name: svc.Name,
-												Port: port,
+						Containers: []corev1.Container{
+							{
+								Name:         "app",
+								Image:        app.Spec.Image,
+								Args:         app.Spec.Args,
+								Resources:    app.Spec.Resources,
+								Ports:        containerPorts,
+								Env:          app.Spec.Env,
+								VolumeMounts: volumeMounts,
+							},
+						},
+						Volumes: volumes,
+						Affinity: &corev1.Affinity{
+							NodeAffinity: &corev1.NodeAffinity{
+								RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+									NodeSelectorTerms: []corev1.NodeSelectorTerm{
+										{
+											MatchExpressions: []corev1.NodeSelectorRequirement{
+												{
+													Key:      "location", // Node label key
+													Operator: corev1.NodeSelectorOpIn,
+													Values:   []string{locationConfig.Tag}, // Node label value
+												},
 											},
 										},
 									},
@@ -355,30 +220,91 @@ func (r *AppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		}
 
 		// Set App instance as the owner and controller
-		if err := controllerutil.SetControllerReference(app, ingress, r.Scheme); err != nil {
+		if err := controllerutil.SetControllerReference(app, deploy, r.Scheme); err != nil {
 			return ctrl.Result{}, err
 		}
 
-		// Check if the Ingress already exists
-		foundIngress := &networkingv1.Ingress{}
-		err = r.Get(ctx, types.NamespacedName{Name: ingress.Name, Namespace: ingress.Namespace}, foundIngress)
+		// Check if the Deployment already exists
+		found := &appsv1.Deployment{}
+		err = r.Get(ctx, types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
-			log.Info("Creating a new Ingress", "Ingress.Namespace", ingress.Namespace, "Ingress.Name", ingress.Name)
-			err = r.Create(ctx, ingress)
+			log.Info("Creating a new Deployment", "Deployment.Namespace", deploy.Namespace, "Deployment.Name", deploy.Name)
+			err = r.Create(ctx, deploy)
 			if err != nil {
 				return ctrl.Result{}, err
 			}
 		} else if err != nil {
 			return ctrl.Result{}, err
 		} else {
-			// Update the existing Ingress
-			foundIngress.Spec = ingress.Spec
-			log.Info("Updating Ingress", "Ingress.Namespace", foundIngress.Namespace, "Ingress.Name", foundIngress.Name)
-			err = r.Update(ctx, foundIngress)
+			// Update the existing Deployment
+			found.Spec = deploy.Spec
+			log.Info("Updating Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
+			err = r.Update(ctx, found)
 			if err != nil {
 				return ctrl.Result{}, err
 			}
 		}
+
+		serviceType := corev1.ServiceTypeNodePort
+		if app.Spec.Private {
+			serviceType = corev1.ServiceTypeClusterIP
+		}
+
+		// Create a slice to hold the service ports
+		servicePorts := []corev1.ServicePort{}
+		for _, portConfig := range app.Spec.Ports {
+			servicePort := corev1.ServicePort{
+				Name:       portConfig.Name,
+				Port:       portConfig.Port,
+				TargetPort: portConfig.TargetPort,
+				Protocol:   portConfig.Protocol,
+			}
+			servicePorts = append(servicePorts, servicePort)
+		}
+
+		svc := &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      appLocationName + "-svc",
+				Namespace: app.Namespace,
+				Labels:    map[string]string{"app": app.Name, "instance": appLocationName},
+			},
+			Spec: corev1.ServiceSpec{
+				Selector: map[string]string{"instance": appLocationName},
+				Ports:    servicePorts,
+				Type:     serviceType,
+			},
+		}
+
+		// Set App instance as the owner and controller
+		if err := controllerutil.SetControllerReference(app, svc, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		// Check if the Service already exists
+		foundSvc := &corev1.Service{}
+		err = r.Get(ctx, types.NamespacedName{Name: svc.Name, Namespace: svc.Namespace}, foundSvc)
+		if err != nil && errors.IsNotFound(err) {
+			log.Info("Creating a new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
+			err = r.Create(ctx, svc)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		} else if err != nil {
+			return ctrl.Result{}, err
+		} else {
+			// Update the existing Service
+			foundSvc.Spec = svc.Spec
+			log.Info("Updating Service", "Service.Namespace", foundSvc.Namespace, "Service.Name", foundSvc.Name)
+			err = r.Update(ctx, foundSvc)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+	}
+
+	// Call the functi// Call the function to reconcile the NetworkPolicy
+	if err := r.reconcileNetworkPolicy(ctx, log, app); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	/*
@@ -402,37 +328,70 @@ func (r *AppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 // Supporting Helpers
 func (r *AppReconciler) reconcileNetworkPolicy(ctx context.Context, log logr.Logger, app *packetwareappv1.App) error {
+	locationLabelMap := make(map[string]string)
+
+	for _, location := range app.Spec.Locations {
+		// Populate the map with some value, e.g., the location tag
+		locationLabelMap["app"] = location.Tag
+	}
+
 	// Ingress rule placeholder
 	networkPolicyIngressRules := []networkingv1.NetworkPolicyIngressRule{}
 
-	// If the app is public we should make these ports open to ingress
-	if !app.Spec.Private {
-		// Create a slice to hold the networkPolicy ports
-		networkPolicyPorts := []networkingv1.NetworkPolicyPort{}
+	// Create two slices for networkPolicy ports
+	var publicPorts []networkingv1.NetworkPolicyPort
+	var privatePorts []networkingv1.NetworkPolicyPort
 
-		for _, portConfig := range app.Spec.Ports {
-			// Convert port number to IntOrString
-			port := intstr.FromInt(int(portConfig.Port))
+	for _, portConfig := range app.Spec.Ports {
+		// Convert port number to IntOrString
+		port := intstr.FromInt(int(portConfig.Port))
 
-			// Create NetworkPolicyPort object
-			networkPolicyPort := v1.NetworkPolicyPort{
-				Port:     &port,
-				Protocol: &portConfig.Protocol,
-			}
-			networkPolicyPorts = append(networkPolicyPorts, networkPolicyPort)
+		// Create NetworkPolicyPort object
+		networkPolicyPort := networkingv1.NetworkPolicyPort{
+			Port:     &port,
+			Protocol: &portConfig.Protocol,
 		}
 
-		networkPolicyIngressRule := networkingv1.NetworkPolicyIngressRule{
-			Ports: networkPolicyPorts,
+		// Separate ports into public and private
+		if portConfig.Private {
+			privatePorts = append(privatePorts, networkPolicyPort)
+		} else {
+			publicPorts = append(publicPorts, networkPolicyPort)
 		}
+	}
 
-		networkPolicyIngressRules = append(networkPolicyIngressRules, networkPolicyIngressRule)
+	// If there are public ports, create a rule allowing access from anywhere
+	if len(publicPorts) > 0 {
+		networkPolicyIngressRules = append(networkPolicyIngressRules, networkingv1.NetworkPolicyIngressRule{
+			Ports: publicPorts,
+			From: []networkingv1.NetworkPolicyPeer{
+				{ // Allow from anywhere
+					NamespaceSelector: &metav1.LabelSelector{},
+				},
+			},
+		})
+	}
+
+	// If there are private ports, create a rule allowing access only from the same namespace
+	if len(privatePorts) > 0 {
+		networkPolicyIngressRules = append(networkPolicyIngressRules, networkingv1.NetworkPolicyIngressRule{
+			Ports: privatePorts,
+			From: []networkingv1.NetworkPolicyPeer{
+				{ // Allow only from same namespace
+					NamespaceSelector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"kubernetes.io/metadata.name": app.Namespace,
+						},
+					},
+				},
+			},
+		})
 	}
 
 	// Create default NetworkPolicy that blocks everything except service targetPorts
 	defaultNetworkPolicy := &networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      app.Name + "-default",
+			Name:      app.Name + "-network-policy",
 			Namespace: app.Namespace,
 		},
 		Spec: networkingv1.NetworkPolicySpec{
@@ -467,61 +426,6 @@ func (r *AppReconciler) reconcileNetworkPolicy(ctx context.Context, log logr.Log
 		foundDefaultNetworkPolicy.Spec = defaultNetworkPolicy.Spec
 		log.Info("Updating default NetworkPolicy", "NetworkPolicy.Namespace", foundDefaultNetworkPolicy.Namespace, "NetworkPolicy.Name", foundDefaultNetworkPolicy.Name)
 		err = r.Update(ctx, foundDefaultNetworkPolicy)
-		if err != nil {
-			return err
-		}
-	}
-
-	// Create NetworkPolicy for private services to only allow ingress from the same namespace
-	privateNetworkPolicy := &networkingv1.NetworkPolicy{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      app.Name + "-private",
-			Namespace: app.Namespace,
-		},
-		Spec: networkingv1.NetworkPolicySpec{
-			PodSelector: metav1.LabelSelector{
-				MatchLabels: map[string]string{"app": app.Name},
-			},
-			PolicyTypes: []networkingv1.PolicyType{
-				networkingv1.PolicyTypeIngress,
-			},
-			Ingress: []networkingv1.NetworkPolicyIngressRule{
-				{
-					From: []networkingv1.NetworkPolicyPeer{
-						{
-							NamespaceSelector: &metav1.LabelSelector{
-								MatchLabels: map[string]string{
-									"kubernetes.io/metadata.name": app.Namespace,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	// Set App instance as the owner and controller
-	if err := controllerutil.SetControllerReference(app, privateNetworkPolicy, r.Scheme); err != nil {
-		return err
-	}
-
-	// Check if the private NetworkPolicy already exists
-	foundPrivateNetworkPolicy := &networkingv1.NetworkPolicy{}
-	err = r.Get(ctx, types.NamespacedName{Name: privateNetworkPolicy.Name, Namespace: privateNetworkPolicy.Namespace}, foundPrivateNetworkPolicy)
-	if err != nil && errors.IsNotFound(err) {
-		log.Info("Creating a new private NetworkPolicy", "NetworkPolicy.Namespace", privateNetworkPolicy.Namespace, "NetworkPolicy.Name", privateNetworkPolicy.Name)
-		err = r.Create(ctx, privateNetworkPolicy)
-		if err != nil {
-			return err
-		}
-	} else if err != nil {
-		return err
-	} else {
-		// Update the existing private NetworkPolicy if needed
-		foundPrivateNetworkPolicy.Spec = privateNetworkPolicy.Spec
-		log.Info("Updating private NetworkPolicy", "NetworkPolicy.Namespace", foundPrivateNetworkPolicy.Namespace, "NetworkPolicy.Name", foundPrivateNetworkPolicy.Name)
-		err = r.Update(ctx, foundPrivateNetworkPolicy)
 		if err != nil {
 			return err
 		}

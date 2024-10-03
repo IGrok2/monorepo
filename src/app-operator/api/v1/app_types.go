@@ -29,6 +29,11 @@ type ReplicasSpec struct {
 	Max int32 `json:"max"`
 }
 
+type LocationConfig struct {
+	Tag      string       `json:"tag"`
+	Replicas ReplicasSpec `json:"replicaSpec"`
+}
+
 type PersistentVolumeConfig struct {
 	Name      string `json:"name"`
 	MountPath string `json:"mountPath"`
@@ -48,23 +53,25 @@ type RegistryConfig struct {
 	Auth         RegistryAuth `json:"auth"`
 }
 
+// PortConfig defines the structure of a port, including its privacy status
+type PortConfig struct {
+	corev1.ServicePort `json:",inline"`
+	Private            bool `json:"private,omitempty"`
+}
+
 // AppSpec defines the desired state of App
 type AppSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of App. Edit app_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
-
-	Replicas  int32                       `json:"replicas"`
+	Locations []LocationConfig            `json:"locations"`
 	Image     string                      `json:"image"`
 	Args      []string                    `json:"args,omitempty"`
 	Env       []corev1.EnvVar             `json:"env,omitempty"`
-	Ports     []corev1.ServicePort        `json:"ports"`
+	Ports     []PortConfig                `json:"ports"`
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 	Volumes   []PersistentVolumeConfig    `json:"volumes,omitempty"`
 	Private   bool                        `json:"private,omitempty"`
-	AppType   string                      `json:"appType"`
 	Registry  RegistryConfig              `json:"registry,omitempty"`
 	//easyjson:json
 }
