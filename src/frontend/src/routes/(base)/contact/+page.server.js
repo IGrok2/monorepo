@@ -10,7 +10,7 @@ export const actions = {
         const email = data.get('email');
         const phone = data.get('phone');
         const message = data.get('message');
-        //const agreed = data.get('switch-1-label');
+        const agreed = data.get('switch-1-label');
 
         await notificationWebhookClient.send({
             username: 'Contact Form',

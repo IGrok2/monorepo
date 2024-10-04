@@ -3,7 +3,7 @@ import { error } from "@sveltejs/kit";
 import { PUBLIC_CMS } from '$env/static/public';
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ fetch }) {
+export async function load({ fetch, params }) {
     const fetchPosts = async () => {
         console.log('Posts Load Ran');
         const res = await fetch(`${PUBLIC_CMS}/api/posts?sort[0]=createdAt:desc&populate=*`);

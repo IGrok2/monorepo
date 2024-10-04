@@ -12,7 +12,7 @@ export async function POST({ request }) {
 
 // 5 second timeout:
 
-        //const timeoutId = setTimeout(() => controller.abort(), 2000)
+        const timeoutId = setTimeout(() => controller.abort(), 2000)
 
         const response = await fetch(url, { signal: controller.signal });
 
@@ -40,7 +40,6 @@ export async function POST({ request }) {
             data: favicon
         })
     } catch (error) {
-        console.log(error);
         return json({
             success: false,
             message: "mogged by the site"

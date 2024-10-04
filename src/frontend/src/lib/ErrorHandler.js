@@ -1,5 +1,3 @@
 export const OnMountErrHandler = (res) => {
-    if (res ) {
-        return;
-    }
+    if (res )
 }
