@@ -1,0 +1,65 @@
+/// The role a user has in a project / team
+enum MemberRole {
+    /// This user can read financial statements and traffic records, but cannot make any changes
+    READONLY
+    /// This user can remove, add, and change domains and apps
+    STANDARD
+    /// This user can make modifications to any project resource and modfiy the Team (its members)
+    ADMIN
+}
+
+// Projects, Domains, Container Registries, and Git Namespaces
+enum ResourceHolder {
+    TEAM
+    USER
+}
+
+enum MemberOf {
+    TEAM
+    PROJECT
+}
+
+enum BuilderType {
+    NONE
+    NIXPACKS
+    DOCKERFILE
+    BUILDPACKS
+}
+
+enum ChannelType {
+    GITHUB
+    IMAGE
+}
+
+enum GitProvider {
+    GITHUB
+    GITLAB
+}
+
+enum ImagePlatform {
+    PACKETWARE_REGISTRY
+    DOCKER_HUB
+    GITHUB_REGISTRY
+    PRIVATE_REGISTRY
+}
+
+enum BuildStatus {
+    INITIALIZED
+    BUILDING
+    UPLOADING
+    FINISHED
+    ERROR
+}
+
+enum PortProtocol {
+    PRIVATE
+    TCP
+    UDP
+    HTTP
+}
+
+enum SecretType {
+    PLAINTEXT
+    CERTIFICATE
+    KEY
+}

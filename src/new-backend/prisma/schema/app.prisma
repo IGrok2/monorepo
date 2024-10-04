@@ -1,0 +1,160 @@
+model App {
+    id            String       @id @default(cuid())
+    project       Project      @relation(fields: [projectId], references: [id])
+    projectId     String       @map("project_id")
+    environmentId String       @map("environment_id")
+    slug          String       @unique
+    source        Source       @relation(fields: [sourceId], references: [id])
+    sourceId      Int          @map("source_id")
+    activeId      Int?         @map("active_id")
+    builds        Build[]
+    images        Image[]
+    deployments   Deployment[]
+    variables     Secret[]     @relation("app_secrets")
+    ports         Port[]
+    hostings      Hosting[]
+    storage       Storage[]
+    quota         Quota        @relation(fields: [quotaId], references: [id])
+    quotaId       Int          @map("quota_id")
+    Commands      Commands[]
+    Environment   Environment  @relation(fields: [environmentId], references: [id])
+
+    @@map("app")
+}
+
+model Image {
+    id                  Int                @id @default(autoincrement())
+    appId               String             @map("app_id")
+    app                 App                @relation(fields: [appId], references: [id])
+    url                 String
+    containerRegistryId Int?               @map("container_registry_id")
+    containerRegistry   ContainerRegistry? @relation(fields: [containerRegistryId], references: [id])
+    foreign             Boolean
+    public              Boolean
+    Build               Build[]
+    Deployment          Deployment[]
+
+    @@map("image")
+}
+
+model GitRepo {
+    id             Int           @id @default(autoincrement())
+    appId          String        @map("app_id")
+    repoId         Int           @map("repo_id")
+    branch         String
+    subdirectory   String
+    public         Boolean
+    gitNamespaceId Int?          @map("git_namespace_id")
+    gitNamespace   GitNamespace? @relation(fields: [gitNamespaceId], references: [id])
+    Source         Source[]
+
+    @@map("git_repo")
+}
+
+model Source {
+    id         Int          @id @default(autoincrement())
+    appId      String       @map("app_id")
+    channel    ChannelType
+    builder    BuilderType?
+    arguments  String?
+    commandsId Int?         @map("commands_id")
+    commands   Commands?    @relation(fields: [commandsId], references: [id])
+    gitRepoId  Int?         @map("git_repo_id")
+    gitRepo    GitRepo?     @relation(fields: [gitRepoId], references: [id])
+    public     Boolean
+    autoDeploy Boolean      @map("auto_deploy")
+    App        App[]
+
+    @@map("source")
+}
+
+model Commands {
+    id      Int      @id @default(autoincrement())
+    appId   String   @map("app_id")
+    app     App      @relation(fields: [appId], references: [id])
+    install String
+    build   String
+    run     String
+    Source  Source[]
+
+    @@map("commands")
+}
+
+model Build {
+    id         Int          @id @default(autoincrement())
+    appId      String       @map("app_id")
+    app        App          @relation(fields: [appId], references: [id])
+    builder    BuilderType
+    imageId    Int?         @map("image_id")
+    image      Image?       @relation(fields: [imageId], references: [id])
+    revision   String
+    duration   Int
+    status     BuildStatus
+    logs       String?
+    Deployment Deployment[]
+
+    @@map("build")
+}
+
+model Deployment {
+    id         Int         @id @default(autoincrement())
+    appId      String      @map("app_id")
+    app        App         @relation(fields: [appId], references: [id])
+    channel    ChannelType
+    imageId    Int?        @map("image_id")
+    image      Image?      @relation(fields: [imageId], references: [id])
+    arguments  String?
+    buildId    Int?        @map("build_id")
+    build      Build?      @relation(fields: [buildId], references: [id])
+    clearCache Boolean     @map("clear_cache")
+
+    @@map("deployment")
+}
+
+model Port {
+    id           Int          @id @default(autoincrement())
+    appId        String       @map("app_id")
+    app          App          @relation(fields: [appId], references: [id])
+    name         String
+    number       Int
+    protocol     PortProtocol
+    externalAddr String       @map("external_addr")
+    externalPort Int          @map("external_port")
+
+    @@map("port")
+}
+
+model Hosting {
+    id          Int      @id @default(autoincrement())
+    appId       String   @map("app_id")
+    app         App      @relation(fields: [appId], references: [id])
+    locationId  String   @map("location_id")
+    location    Location @relation(fields: [locationId], references: [id])
+    minReplicas Int      @map("min_replicas")
+    maxReplicas Int      @map("max_replicas")
+    clusterIP   String   @db.VarChar(255)
+
+    @@map("hosting")
+}
+
+model Storage {
+    id         Int    @id @default(autoincrement())
+    appId      String @map("app_id")
+    app        App    @relation(fields: [appId], references: [id])
+    mountPoint String @map("mount_point")
+    volumeId   Int    @map("volume_id")
+    volume     Volume @relation(fields: [volumeId], references: [id])
+
+    @@map("storage")
+}
+
+model Quota {
+    id      Int    @id @default(autoincrement())
+    appId   String @map("app_id")
+    cpu     Int
+    memory  Int
+    network Int
+    App     App[]
+
+    @@map("quota")
+}

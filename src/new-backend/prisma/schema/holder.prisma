@@ -1,0 +1,148 @@
+model Team {
+    id                        String                   @id @default(cuid())
+    createdAt                 DateTime                 @default(now())
+    updatedAt                 DateTime                 @updatedAt
+    slug                      String                   @unique
+    projects                  Project[]
+    members                   Member[]
+    containerRegistries       ContainerRegistry[]
+    gitNamespaces             GitNamespace[]
+    integrationVerificationId String?                  @map("integration_verification_id")
+    integrationVerification   IntegrationVerification? @relation(fields: [integrationVerificationId], references: [id])
+    stripeCustomerId          String?                  @map("stripe_customer_id")
+
+    @@map("team")
+}
+
+model GitNamespace {
+    id               Int            @id @default(autoincrement())
+    createdAt        DateTime       @default(now())
+    updatedAt        DateTime       @updatedAt
+    holder           ResourceHolder
+    team             Team?          @relation(fields: [teamId], references: [id])
+    teamId           String?        @map("team_id")
+    user             User?          @relation(fields: [userId], references: [id])
+    userId           String?        @map("user_ud")
+    provider         GitProvider
+    installId        Int            @map("install_id")
+    restrictedAccess Boolean        @map("restricted_access")
+    GitRepo          GitRepo[]
+
+    @@map("git_namespace")
+}
+
+model ContainerRegistry {
+    id        Int            @id @default(autoincrement())
+    createdAt DateTime       @default(now())
+    updatedAt DateTime       @updatedAt
+    holder    ResourceHolder
+    team      Team?          @relation(fields: [teamId], references: [id])
+    teamId    String?        @map("team_id")
+    user      User?          @relation(fields: [userId], references: [id])
+    userId    String?        @map("user_id")
+    platform  ImagePlatform
+    url       String         @db.VarChar(1024)
+    name      String         @db.VarChar(255)
+    username  String         @db.VarChar(1024)
+    password  String         @db.VarChar(1024)
+    image     Image[]
+
+    @@map("container_registry")
+}
+
+model IntegrationVerification {
+    id        String   @id
+    createdAt DateTime @map("created_at")
+    team      Team[]
+    user      User[]
+
+    @@map("integration_verification")
+}
+
+/// A model for a project
+model Project {
+    id           String        @id @default(cuid())
+    createdAt    DateTime      @default(now()) @map("created_at")
+    updatedAt    DateTime      @updatedAt @map("updated_at")
+    slug         String        @unique
+    environments Environment[]
+    apps         App[]
+    volumes      Volume[]
+    secrets      Secret[]
+    members      Member[]
+    teamId       String?       @map("team_id")
+    team         Team?         @relation(fields: [teamId], references: [id])
+
+    @@map("project")
+}
+
+/// A proverbial join table for a member of a team
+model Member {
+    id     String     @id @default(cuid())
+    user   User       @relation(references: [id], fields: [userId])
+    userId String     @map("user_id")
+    role   MemberRole
+
+    ownerType MemberOf @map("owner_type")
+    Team      Team?    @relation(fields: [teamId], references: [id])
+    teamId    String?  @map("team_id")
+    Project   Project? @relation(fields: [projectId], references: [id])
+    projectId String?  @map("project_id")
+
+    invitedAt            DateTime  @default(now()) @map("invited_at")
+    invitationAccepted   Boolean   @default(false) @map("invitation_accepted")
+    invitationAcceptedAt DateTime? @map("invitation_accepted_at")
+
+    @@map("member")
+}
+
+model Environment {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    slug      String   @db.VarChar(255)
+    apps      App[]
+    volumes   Volume[]
+    secrets   Secret[]
+    project   Project  @relation(fields: [projectId], references: [id])
+    projectId String   @map("project_id")
+
+    @@map("environment")
+}
+
+/// A model that represents the shared secrets
+model Secret {
+    id            String       @id @default(cuid())
+    createdAt     DateTime     @default(now()) @map("created_at")
+    updatedAt     DateTime     @updatedAt @map("updated_at")
+    name          String
+    value         String
+    type          SecretType
+    project       Project      @relation(references: [id], fields: [projectId])
+    projectId     String       @map("project_id")
+    Environment   Environment? @relation(fields: [environmentId], references: [id])
+    environmentId String?      @map("environment_id")
+
+    apps App[] @relation("app_secrets")
+
+    @@map("secret")
+}
+
+model Volume {
+    id         Int      @id @default(autoincrement())
+    createdAt  DateTime @default(now()) @map("created_at")
+    updatedAt  DateTime @updatedAt @map("updated_at")
+    slug       String   @db.VarChar(255)
+    size       Int // Size in Gi
+    locationId String   @map("location_id")
+    location   Location @relation(fields: [locationId], references: [id])
+
+    // Relations to Project and Environment
+    project       Project     @relation(fields: [projectId], references: [id])
+    projectId     String      @map("project_id")
+    environment   Environment @relation(fields: [environmentId], references: [id])
+    environmentId String      @map("environment_id")
+    storage       Storage[]
+
+    @@map("volume")
+}
