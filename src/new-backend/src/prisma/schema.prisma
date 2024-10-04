@@ -1,0 +1,255 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+/// A user in the db
+model User {
+  id           String @id @default(cuid())
+  /// User's name. Intended to be a full name.
+  name         String
+  /// User's email address
+  email        String @unique
+  /// User's hashed password
+  passwordHash String
+
+  /// User's (depending on expiresAt) active reset code. If not set, no reset is available
+  resetCode String?   @unique @default(cuid())
+  /// The reset code lasts 15 minutes, after which it has expired
+  expiresAt DateTime?
+  /// When the reset code was used (and the password was reset) last
+  usedAt    DateTime?
+
+  /// Whether the email is verified
+  emailVerified               Boolean   @default(false)
+  /// The token to be used to validate the email
+  emailToken                  String?   @unique @default(cuid())
+  /// Last email sent to verify the email
+  emailVerificationMailSentAt DateTime  @default(now())
+  /// When the email was verified
+  emailVerifiedAt             DateTime?
+
+  /// The customer's optional Stripe customer ID - this is all we'll have if they're a paying customer
+  stripeCustomerId String?
+
+  /// The notifications that exist for this user
+  notifications Notification[]
+  /// The members that make this project whole
+  Member        Member[]
+}
+
+/// A notification for a user or project
+model Notification {
+  id        String   @id @default(cuid())
+  /// What the notification should display
+  message   String
+  /// Link to the notification source (if relevant)
+  link      String?
+  /// Whether the notification was read
+  seen      Boolean  @default(false)
+  /// When the notification was created
+  createdAt DateTime @default(now())
+
+  // Notifications either belong to users or projects. Here, we define which:
+
+  /// Optional object for User which indicates a user owns this notification
+  user      User?    @relation(references: [id], fields: [userId])
+  /// Optional object for project which indicates a project owns this notification
+  project   Project? @relation(references: [id], fields: [projectId])
+  /// CUID of the User if relevant
+  userId    String?
+  /// CUID of the Project if relevant
+  projectId String?
+}
+
+/// A model for a project
+model Project {
+  id   String @id @default(cuid())
+  /// The name of this project
+  name String
+
+  notifications    Notification[]
+  githubNamespaces GithubNamespace[]
+  secrets          Secret[]
+}
+
+/// The role a user has in a project
+enum Role {
+  /// This user can read financial statements and traffic records, but cannot make any changes
+  READONLY
+  /// This user can remove, add, and change domains and apps
+  STANDARD
+  /// This user can make modifications to any project resource and modfiy the Team (its members)
+  ADMIN
+}
+
+/// A proverbial join table for a member of a team
+model Member {
+  id                   String    @id @default(cuid())
+  /// The role this user has in the project
+  role                 Role
+  /// When the user was invited to join this project
+  invitedAt            DateTime  @default(now())
+  /// If the invitation has been accepted and a user is a full-fledged member of the project
+  invitationAccepted   Boolean   @default(false)
+  /// The date the invitation was accepted at, if relevant
+  invitationAcceptedAt DateTime?
+
+  /// The user object for this member
+  user   User   @relation(references: [id], fields: [userId])
+  /// The user ID which references the CUID of the user
+  userId String
+}
+
+/// A GitHub namespace for access that a project shares to receive webhooks and create new apps
+model GithubNamespace {
+  id        String  @id @default(cuid())
+  /// The installation ID from GitHub
+  installId String
+  /// The project object for this namespace
+  project   Project @relation(references: [id], fields: [projectId])
+  /// The project ID to get the project object from
+  projectId String
+}
+
+/// A model that represents the shared secrets
+model Secret {
+  id String @id @default(cuid())
+
+  key   String
+  /// All secrets on our end are 'Opaque'
+  value String
+
+  /// The project object for this secret
+  project   Project @relation(references: [id], fields: [projectId])
+  /// The project ID to get the project object from
+  projectId String
+}
+
+/// A model for an App on the Packetware platform
+model App {
+  id   String @id @default(cuid())
+  /// The name of the application
+  name String
+
+  /// The container registry type
+  containerSourceType ContainerSourceType
+  /// If user Dockerhub,
+  /// If a private registry, the fully-formatted URL to this container registry
+  url                 String?
+  /// If a private registry that needs auth, a username to authenticate from
+  username            String?
+  /// If a private registry that needs auth, a password to authenticate from
+  password            String?
+
+  /// How this app will be built
+  buildSource BuildSource
+
+  /// The ports allocated for this application
+  ports Port[]
+}
+
+/// The type of container registry to pull from
+enum ContainerSourceType {
+  DOCKER_HUB
+  GITHUB_REPO
+  PRIVATE_REGISTRY
+}
+
+/// An enumeration to represent how the application is built
+enum BuildSource {
+  /// If the image should be built with nixpacks
+  NIXPACKS
+  /// If the image should be built from a Dockerfile
+  DOCKERFILE
+  /// If the image should use legacy Buildpacks
+  BUILDPACKS
+}
+
+/// A model for the open ports of an App
+model Port {
+  id String @id @default(cuid())
+
+  /// The type of port that this is
+  portType     PortType
+  /// The external port the internal port is mapped to
+  externalPort Int?
+
+  createdAt DateTime @default(now())
+
+  /// A reference to the App this port is open for
+  App   App?    @relation(fields: [appId], references: [id])
+  /// The ID of that App
+  appId String?
+}
+
+/// The type of port this is
+enum PortType {
+  /// Only to be accessible between other apps in the project
+  PRIVATE
+  /// To be accessible to the Internet
+  PUBLIC
+  /// To be reachable over HTTP, to then be managed by Opnieuw
+  HTTP
+}
+
+/// A more internal view of where an App is placed on our internal infrastructure
+/// This model should exist per server the App is on
+model AppPlacement {
+  id              String @id @default(cuid())
+  /// The minimum and maximum number of replicas
+  minimumReplicas Int
+  maximumReplicas Int
+  /// Number of threads allocated
+  cpu             Int
+  /// Number of megabytes of memory allocated
+  memory          Int
+  /// Number of megabits / sec of network traffic allocated
+  network         Int
+  /// The moint point of the drive
+  mountPoint      String
+  /// The internal IP address in this region
+  internalIp      String
+  /// References to the server this application is on
+  server          Server @relation(fields: [serverId], references: [id])
+  serverId        String
+}
+
+/// A Packetware Point of Presence
+model PoP {
+  id String @id @default(cuid())
+
+  /// The name of this region, ex DFW
+  name String
+
+  /// Servers in this region
+  servers Server[]
+}
+
+/// A Packetware server
+model Server {
+  id String @id @default(cuid())
+
+  /// The hostname of the server - this should be cool!
+  name         String
+  /// The public IP addresses of this server
+  IPs          PacketwareIp[]
+  /// The points of
+  PoP          PoP            @relation(fields: [poPId], references: [id])
+  poPId        String
+  AppPlacement AppPlacement[]
+}
+
+/// Packetware public IP addresses
+model PacketwareIp {
+  Ip String @id
+
+  /// The server object this IP address belongs to
+  server   Server @relation(references: [id], fields: [serverId])
+  /// The ID of the server this IP address belongs to
+  serverId String
+}
