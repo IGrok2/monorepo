@@ -9,27 +9,21 @@
     let loading = false;
 
     /** @param {{ currentTarget: EventTarget & HTMLFormElement}} event */
-    async function login(event) {
+    async function forgotPassword(event) {
         loading = true;
 
         const data = new FormData(event.currentTarget);
         const email = data.get("email");
-        const password = data.get("password");
 
         let body = {
             email,
-            password,
         };
 
         try {
-            let res = await APIClient.post("/auth/login", body);
+            let res = await APIClient.post("/auth/reset_password_send", body);
             console.log(res);
 
-            toast.success("User successfully logged in.");
-
-            // Set JWT token in a cookie
-            document.cookie = `jwt=${res.data.data.token}; path=/;`;
-            document.location = "/i/dash";
+            toast.success("Reset password email has been sent.");
         } catch (err) {
             console.log(err);
             toast.error(err.response.data.data.error.message);
@@ -46,7 +40,7 @@
             <h2
                 class="backdrop-blur-sm mt-10 text-center text-4xl font-bold font-ultrawide leading-9 tracking-tight text-primary"
             >
-                Welcome back 👋
+                Forgot Password
             </h2>
             <a
                 href="/i/auth/register"
@@ -62,7 +56,7 @@
         >
             <form
                 class="space-y-6 backdrop-blur-sm p-4 rounded-lg"
-                on:submit|preventDefault={login}
+                on:submit|preventDefault={forgotPassword}
             >
                 <div>
                     <Label for="email">Email address</Label>
@@ -77,30 +71,10 @@
                     </div>
                 </div>
 
-                <div>
-                    <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <div class="text-sm">
-                            <a
-                                href="/i/auth/reset-password"
-                                class="font-semibold text-muted-foreground hover:underline duration-150"
-                                >Forgot password?</a
-                            >
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <Input
-                            id="password"
-                            name="password"
-                            type="password"
-                            autocomplete="current-password"
-                            required
-                        />
-                    </div>
-                </div>
-
-                <Button type="submit" class="w-full" disabled={loading}
-                    >{#if !loading}Sign in{:else}Signing in ...{/if}</Button
+                <Button
+                    type="submit"
+                    class="w-full"
+                    >{#if !loading}Submit{:else}Sending Email ...{/if}</Button
                 >
             </form>
         </div>

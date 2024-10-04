@@ -7,16 +7,18 @@
 
     import { toast } from "svelte-sonner";
 
-    let name;
-    let email;
-    let password;
     let loading = false;
 
-    async function register() {
-        console.log("login");
+    /** @param {{ currentTarget: EventTarget & HTMLFormElement}} event */
+    async function register(event) {
         loading = true;
 
-        let data = {
+        const data = new FormData(event.currentTarget);
+        const name = data.get("name");
+        const email = data.get("email");
+        const password = data.get("password");
+
+        let body = {
             name,
             email,
             password,
@@ -26,18 +28,18 @@
             let res = await APIClient.post("/auth/register", data);
             console.log(res);
 
-            toast.success(res.data.data.message);
+            toast.success(`${name} successfully registered.`);
 
             // Set JWT token in a cookie
             document.cookie = `jwt=${res.data.data.token}; path=/;`;
             document.location = "/i/dash";
         } catch (err) {
             console.log(err);
-            toast.error(err.response.data.data.message);
+            toast.error(err.response.data.data.error.message);
             loading = false;
         }
     }
-</script>
+</script>/home/sive/projects/packetware/monorepo-operator/monorepo/src/frontend/src/routes/api
 
 <div
     class="backdrop-blur-sm flex min-h-full flex-col justify-center pb-56 lg:px-8"
@@ -66,7 +68,6 @@
                     <Label for="name">Name</Label>
                     <div class="mt-2">
                         <Input
-                            bind:value={name}
                             id="name"
                             name="name"
                             type="string"
@@ -80,7 +81,6 @@
                     <Label for="email">Email address</Label>
                     <div class="mt-2">
                         <Input
-                            bind:value={email}
                             id="email"
                             name="email"
                             type="email"
@@ -97,7 +97,6 @@
                     <div class="mt-2">
                         <Input
                             id="password"
-                            bind:value={password}
                             name="password"
                             type="password"
                             autocomplete="password"

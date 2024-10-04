@@ -52,7 +52,7 @@ export async function ResetPasswordSend({
   // send the email to the user
   await sendResetPasswordEmail(user.email, {
     name: user.name,
-    resetUrl: BASE_URL + "/reset-password?token=" + code,
+    resetUrl: BASE_URL + "/i/auth/reset-password/" + code,
   });
 
   return {
@@ -77,6 +77,7 @@ export async function ResetPasswordComplete({
 }: z.infer<typeof ResetPasswordCompleteInput>): Promise<
   WResponse<typeof ResetPasswordCompleteOutput>
 > {
+  console.log("hello")
   // pull the user from the database
   const user = await prisma.user.findUnique({
     where: {
@@ -96,7 +97,7 @@ export async function ResetPasswordComplete({
   // make sure the code hasn't expired, they last 15 minutes
   if (
     new Date().getTime() -
-      new Date(user.passwordResetCodeSentAt ?? 0).getTime() >
+    new Date(user.passwordResetCodeSentAt ?? 0).getTime() >
     1000 * 60 * 15
   ) {
     return {
@@ -106,23 +107,24 @@ export async function ResetPasswordComplete({
       },
     };
   }
-
-  await prisma.user.update({
-    where: {
-      id: user.id,
-    },
-    data: {
-      passwordHash: await Bun.password.hash(new_password),
-      passwordResetCode: null,
-      notifications: {
-        create: [
-          {
-            message: "Your password was reset",
-          },
-        ],
+  console.log("hello")
+  console.log(
+    await prisma.user.update({
+      where: {
+        id: user.id,
       },
-    },
-  });
+      data: {
+        passwordHash: await Bun.password.hash(new_password),
+        passwordResetCode: null,
+        notifications: {
+          create: [
+            {
+              message: "Your password was reset",
+            },
+          ],
+        },
+      },
+    }));
 
   return {
     success: {
