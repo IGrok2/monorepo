@@ -1,0 +1,88 @@
+/// The role a user has in a project / team
+enum MemberRole {
+  /// This user can read financial statements and traffic records, but cannot make any changes
+  READONLY
+  /// This user can remove, add, and change domains and apps
+  STANDARD
+  /// This user can make modifications to any project resource and modfiy the Team (its members)
+  ADMIN
+}
+
+/// How we're building an app
+enum BuilderType {
+  /// We don't need to build this app (already pulling docker image)
+  NONE
+  /// Building with Nix packs (preferred)
+  NIXPACKS
+  /// Building from a Dockerfile
+  DOCKERFILE
+  /// Building from buildpacks (depracted)
+  BUILDPACKS
+}
+
+/// Where we're pulling code from
+enum ChannelType {
+  /// A Github repository
+  GITHUB
+  /// An existing docker image, from the dockerhub or a custom registry
+  IMAGE
+}
+
+/// Where we're pulling an image from
+enum ImagePlatform {
+  /// Our own registry
+  PACKETWARE_REGISTRY
+  /// Docker hub
+  DOCKER_HUB
+  /// Github's docker hosting
+  GHCR
+  /// Building from a Github repo
+  GITHUB_REGISTRY
+  /// A private docker repo
+  PRIVATE_REGISTRY
+}
+
+/// Current build state of an app
+enum BuildStatus {
+  /// Build is about to start
+  INITIALIZED
+  /// Build is in progress
+  BUILDING
+  /// Build is done, uploading artifacts
+  UPLOADING
+  /// All done
+  FINISHED
+  /// There was an error (view logs to see more)
+  ERROR
+}
+
+/// The protocol of port exposed.
+/// Currently, we're only doing HTTP
+enum PortProtocol {
+  /// The TCP protocol
+  TCP
+  /// The UDP protocol
+  UDP
+  /// HTTP
+  HTTP
+}
+
+/// The type of Kube secret resource
+enum SecretType {
+  /// Opaque secret type. To be placed into the environment.
+  PLAINTEXT
+  /// Public + private key
+  CERTIFICATE
+}
+
+/// The status of a deployment in the pipeline
+enum DeploymentStatus {
+  /// Deployment hasn't started yet
+  PENDING
+  /// Deployment is in flight
+  IN_PROGRESS
+  /// Deployment has landed
+  FINISHED
+  /// Deployment has failed - see logs for more info.
+  FAILED
+}

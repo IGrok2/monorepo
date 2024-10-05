@@ -67,50 +67,46 @@ model Member {
 
 /// The environment in a project - to contain secrets
 model Environment {
-  id        String   @id @default(cuid())
+  id         String   @id @default(cuid())
   /// The name of the environment
-  name      String
-  volumes   Volume[]
-  secrets   Secret[]
-  project   Project  @relation(fields: [projectId], references: [id])
-  projectId String   @map("project_id")
-
-  @@map("environment")
+  name       String
+  /// The secrets the environment contains
+  secrets    Secret[]
+  /// The reference to the project
+  project    Project  @relation(fields: [project_id], references: [id])
+  project_id String
 }
 
 /// A model that represents the shared secrets
 model Secret {
-  id            String       @id @default(cuid())
-  createdAt     DateTime     @default(now()) @map("created_at")
-  updatedAt     DateTime     @updatedAt @map("updated_at")
-  name          String
-  value         String
-  type          SecretType
-  project       Project      @relation(references: [id], fields: [projectId])
-  projectId     String       @map("project_id")
-  Environment   Environment? @relation(fields: [environmentId], references: [id])
-  environmentId String?      @map("environment_id")
-
-  apps App[] @relation("app_secrets")
-
-  @@map("secret")
+  id             String       @id @default(cuid())
+  /// Key of the secret
+  key            String
+  /// Value of the secret
+  value          String
+  /// All secrets are opaque currently
+  type           SecretType
+  /// Reference to the project
+  project        Project      @relation(references: [id], fields: [project_id])
+  project_id     String
+  /// Reference to the environment
+  environment    Environment? @relation(fields: [environment_id], references: [id])
+  environment_id String?
 }
 
+/// A volume that holds data
 model Volume {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  name        String
-  size        Int // Size in Gi
+  id   String @id @default(cuid())
+  /// Name of the volume
+  name String
+  /// Size of the volume in Gi
+  size Int
+
+  /// Reference to the location the volume is in
   location_id String
-  location    Location @relation(fields: [location_id], references: [id])
-
-  // Relations to Project and Environment
-  project       Project     @relation(fields: [projectId], references: [id])
-  projectId     String      @map("project_id")
-  environment   Environment @relation(fields: [environmentId], references: [id])
-  environmentId String      @map("environment_id")
-  storage       Storage[]
-
-  @@map("volume")
+  location    Location  @relation(fields: [location_id], references: [id])
+  /// Reference to the project the volume is in
+  project     Project   @relation(fields: [project_id], references: [id])
+  project_id  String
+  storage     Storage[]
 }
