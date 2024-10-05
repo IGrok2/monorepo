@@ -1,160 +1,181 @@
+/// The assorted models for a Packetware application in the database. It includes everything from the actual
+/// App models, to the supporting infrastructure, like the images, environments (secrets), GitHub repos
+
+/// The model for a Packetware app
 model App {
-    id            String       @id @default(cuid())
-    project       Project      @relation(fields: [projectId], references: [id])
-    projectId     String       @map("project_id")
-    environmentId String       @map("environment_id")
-    slug          String       @unique
-    source        Source       @relation(fields: [sourceId], references: [id])
-    sourceId      Int          @map("source_id")
-    activeId      Int?         @map("active_id")
-    builds        Build[]
-    images        Image[]
-    deployments   Deployment[]
-    variables     Secret[]     @relation("app_secrets")
-    ports         Port[]
-    hostings      Hosting[]
-    storage       Storage[]
-    quota         Quota        @relation(fields: [quotaId], references: [id])
-    quotaId       Int          @map("quota_id")
-    Commands      Commands[]
-    Environment   Environment  @relation(fields: [environmentId], references: [id])
-
-    @@map("app")
+  id              String       @id @default(cuid())
+  /// The slug. This is how the app is referenced in the URL on the dashboard and on packetware.app
+  slug            String
+  /// The reference to the project which owns this application
+  project         Project      @relation(fields: [project_id], references: [id])
+  project_id      String
+  /// The environment this application is using (ex: environment variables / secrets)
+  environment     Environment  @relation(fields: [environment_id], references: [id])
+  environment_id  String
+  /// The source for new deployments
+  source          Source       @relation(fields: [source_id], references: [id])
+  source_id       String
+  /// The active deployment
+  active          Deployment   @relation(fields: [active_id], references: [id], name: "active_deployment")
+  active_id       String
+  /// The build pipelines created for this app
+  builds          Build[]
+  /// The images that exist for this application
+  images          Image[]
+  /// The deployments for this application
+  deployments     Deployment[]
+  /// The ports exposed for this application
+  ports           Port[]
+  /// Where the app is hosted
+  placements      Placement[]
+  /// The storage blocks for this app
+  storage         Storage[]
+  plan            Plan         @relation(fields: [plan_id], references: [id])
+  plan_id         String
+  /// The command to install the required dependencies
+  install_command String?
+  /// The command to build the application
+  build_command   String?
+  /// The entrypoint to start the application
+  run_command     String
+  /// The channel we'll get new app updates from
+  channel         ChannelType
+  /// How we'll be building this image
+  builder         BuilderType?
+  /// Reference to the GitHub repo we're using for this deployment (if we are)
+  git_repo_id     String?
+  git_repo        GitRepo?     @relation(fields: [git_repo_id], references: [id])
+  /// Whether we should auto deploy when we get webhooks from GitHub
+  auto_deploy     Boolean?
+  /// Whether we should clear the cache on new deployments
+  clear_cache     Boolean
 }
 
+/// The image for an application
 model Image {
-    id                  Int                @id @default(autoincrement())
-    appId               String             @map("app_id")
-    app                 App                @relation(fields: [appId], references: [id])
-    url                 String
-    containerRegistryId Int?               @map("container_registry_id")
-    containerRegistry   ContainerRegistry? @relation(fields: [containerRegistryId], references: [id])
-    foreign             Boolean
-    public              Boolean
-    Build               Build[]
-    Deployment          Deployment[]
-
-    @@map("image")
+  /// The ID of the image
+  id                    String             @id @default(cuid())
+  /// The app reference for this image
+  app_id                String
+  app                   App                @relation(fields: [app_id], references: [id], onDelete: Cascade)
+  /// The URL to this image (for example, `postgres`)
+  url                   String
+  /// If we're pulling this app internally (and not using the container registry model)
+  internal              Boolean
+  /// If we need specific authentication to use the image, hold the credentials
+  container_registry_id String?
+  container_registry    ContainerRegistry? @relation(fields: [container_registry_id], references: [id])
 }
 
+/// A GitHub repository we pull images from
 model GitRepo {
-    id             Int           @id @default(autoincrement())
-    appId          String        @map("app_id")
-    repoId         Int           @map("repo_id")
-    branch         String
-    subdirectory   String
-    public         Boolean
-    gitNamespaceId Int?          @map("git_namespace_id")
-    gitNamespace   GitNamespace? @relation(fields: [gitNamespaceId], references: [id])
-    Source         Source[]
-
-    @@map("git_repo")
+  id                 String        @id @default(cuid())
+  /// The GitHub repository IDs
+  repo_id            Int
+  /// The branch to pull deployments from
+  branch             String
+  /// The subdirectory to build and deploy from
+  subdirectory       String
+  /// Whether we should be using credentials to access this repo
+  credentials_needed Boolean
+  /// The namespace (GitHub credentials and settings) we're using to pull from this repo
+  git_namespace_id   String?
+  git_namespace      GitNamespace? @relation(fields: [git_namespace_id], references: [id])
 }
 
-model Source {
-    id         Int          @id @default(autoincrement())
-    appId      String       @map("app_id")
-    channel    ChannelType
-    builder    BuilderType?
-    arguments  String?
-    commandsId Int?         @map("commands_id")
-    commands   Commands?    @relation(fields: [commandsId], references: [id])
-    gitRepoId  Int?         @map("git_repo_id")
-    gitRepo    GitRepo?     @relation(fields: [gitRepoId], references: [id])
-    public     Boolean
-    autoDeploy Boolean      @map("auto_deploy")
-    App        App[]
-
-    @@map("source")
-}
-
-model Commands {
-    id      Int      @id @default(autoincrement())
-    appId   String   @map("app_id")
-    app     App      @relation(fields: [appId], references: [id])
-    install String
-    build   String
-    run     String
-    Source  Source[]
-
-    @@map("commands")
-}
-
+/// The model for an application built on the platform
 model Build {
-    id         Int          @id @default(autoincrement())
-    appId      String       @map("app_id")
-    app        App          @relation(fields: [appId], references: [id])
-    builder    BuilderType
-    imageId    Int?         @map("image_id")
-    image      Image?       @relation(fields: [imageId], references: [id])
-    revision   String
-    duration   Int
-    status     BuildStatus
-    logs       String?
-    Deployment Deployment[]
-
-    @@map("build")
+  id       String      @id @default(cuid())
+  /// Reference to the app this build is for
+  app_id   String
+  app      App         @relation(fields: [app_id], references: [id])
+  /// How this app was built
+  builder  BuilderType
+  /// The created image reference
+  image_id String?
+  image    Image?      @relation(fields: [image_id], references: [id])
+  /// The Git commit SHA
+  revision String
+  /// The current status of this build
+  status   BuildStatus
+  /// The ID of the build logs in s3
+  logs     String      @default(cuid())
 }
 
+/// The model for a deployment (shipping it to the Packetware edge)
 model Deployment {
-    id         Int         @id @default(autoincrement())
-    appId      String      @map("app_id")
-    app        App         @relation(fields: [appId], references: [id])
-    channel    ChannelType
-    imageId    Int?        @map("image_id")
-    image      Image?      @relation(fields: [imageId], references: [id])
-    arguments  String?
-    buildId    Int?        @map("build_id")
-    build      Build?      @relation(fields: [buildId], references: [id])
-    clearCache Boolean     @map("clear_cache")
-
-    @@map("deployment")
+  id       String           @id @default(cuid())
+  /// The reference to the app
+  app_id   String
+  app      App              @relation(fields: [app_id], references: [id])
+  /// If we're deploying from GitHub or a pre-built image
+  channel  ChannelType
+  /// If using the image channel, reference to the image
+  image_id String?
+  image    Image?           @relation(fields: [image_id], references: [id])
+  /// If using the GitHub channel, reference to the build
+  build_id String?
+  build    Build?           @relation(fields: [build_id], references: [id])
+  /// The status of the deployment
+  sttus    DeploymentStatus
 }
 
+/// An exposed port on Packetware
 model Port {
-    id           Int          @id @default(autoincrement())
-    appId        String       @map("app_id")
-    app          App          @relation(fields: [appId], references: [id])
-    name         String
-    number       Int
-    protocol     PortProtocol
-    externalAddr String       @map("external_addr")
-    externalPort Int          @map("external_port")
-
-    @@map("port")
+  id           String       @id @default(cuid())
+  app_id       String
+  app          App          @relation(fields: [app_id], references: [id])
+  /// The name of the exposed port
+  name         String       @default("HTTP")
+  /// The listening port on the container
+  port         Int
+  /// Currently unimplemented (we're only doing HTTP now) - but for TCP / UDP applications
+  protocol     PortProtocol
+  externalAddr String?      @map("external_addr")
+  externalPort Int?         @map("external_port")
 }
 
-model Hosting {
-    id          Int      @id @default(autoincrement())
-    appId       String   @map("app_id")
-    app         App      @relation(fields: [appId], references: [id])
-    locationId  String   @map("location_id")
-    location    Location @relation(fields: [locationId], references: [id])
-    minReplicas Int      @map("min_replicas")
-    maxReplicas Int      @map("max_replicas")
-    clusterIP   String   @db.VarChar(255)
-
-    @@map("hosting")
+/// Where this app has been scheduled
+model Placement {
+  id               String @id @default(cuid())
+  /// Reference to the upstream app
+  app_id           String
+  app              App    @relation(fields: [app_id], references: [id])
+  /// Reference to the server this server is placed on
+  server_id        String
+  server           Server @relation(fields: [server_id], references: [id])
+  /// The amount of replicas we'd like in this location
+  desired_replicas Int
+  /// The ID of the app
+  ip               String
 }
 
+/// Model for app storage
 model Storage {
-    id         Int    @id @default(autoincrement())
-    appId      String @map("app_id")
-    app        App    @relation(fields: [appId], references: [id])
-    mountPoint String @map("mount_point")
-    volumeId   Int    @map("volume_id")
-    volume     Volume @relation(fields: [volumeId], references: [id])
-
-    @@map("storage")
+  id          String @id @default(cuid())
+  app_id      String
+  app         App    @relation(fields: [app_id], references: [id])
+  /// Where to mount the volume
+  mount_point String
+  /// Reference to the app we'd like to mount
+  volume_id   String
+  volume      Volume @relation(fields: [volume_id], references: [id])
 }
 
-model Quota {
-    id      Int    @id @default(autoincrement())
-    appId   String @map("app_id")
-    cpu     Int
-    memory  Int
-    network Int
-    App     App[]
-
-    @@map("quota")
+/// A container registry we can pull images from
+model ContainerRegistry {
+  id       String        @id @default(cuid())
+  /// How the user would like to refer to this container registry
+  name     String
+  /// Where we're pulling the image from
+  platform ImagePlatform
+  /// The URL to the container registry
+  url      String
+  /// When we need to authenticate to this container registry, the username
+  username String?
+  /// The password to authenticate to this container registry with
+  password String?
+  /// The team that owns this container registry
+  team     Team?         @relation(fields: [team_id], references: [id])
+  team_id  String?
 }

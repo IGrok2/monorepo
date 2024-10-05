@@ -1,0 +1,116 @@
+/// The model for a Team
+model Team {
+  id                   String              @id @default(cuid())
+  /// The name of the team
+  name                 String
+  /// The projects this team owns
+  projects             Project[]
+  /// The users which are a member of this team
+  members              Member[]
+  /// The container registries this team controls
+  container_registries ContainerRegistry[]
+  /// The GitHub integrations this team controls
+  git_namespaces       GitNamespace[]
+  /// Who's paying?!
+  stripeCustomerId     String?             @map("stripe_customer_id")
+}
+
+/// GitHub credentials and config
+model GitNamespace {
+  id                           String    @id @default(cuid())
+  /// Reference to the team
+  team                         Team?     @relation(fields: [team_id], references: [id])
+  team_id                      String?
+  /// The installation ID from GitHub
+  install_id                   Int?
+  /// The pending authentication code from GitHub
+  pending_auth_code            String?
+  /// When this auth code was started (past 15 minutes, it should expire)
+  pending_auth_code_created_at DateTime?
+  /// The repos backed by this namepsace
+  GitRepo                      GitRepo[]
+}
+
+/// A model for a project
+model Project {
+  id           String        @id @default(cuid())
+  /// The name of this project
+  name         String
+  /// The environments this project has
+  environments Environment[]
+  /// The apps this this project has
+  apps         App[]
+  /// The volumes this project has
+  volumes      Volume[]
+  /// Reference to the team that owns this project
+  team_id      String
+  team         Team          @relation(fields: [team_id], references: [id])
+}
+
+/// A proverbial join table for a member of a team
+model Member {
+  id   String     @id @default(cuid())
+  /// What role the user has in this organization
+  role MemberRole
+
+  invitedAt            DateTime  @default(now()) @map("invited_at")
+  invitationAccepted   Boolean   @default(false) @map("invitation_accepted")
+  invitationAcceptedAt DateTime? @map("invitation_accepted_at")
+
+  /// Reference to the user
+  user_id String
+  user    User    @relation(references: [id], fields: [user_id])
+  /// Reference to the team
+  team_id String? @map("team_id")
+  team    Team?   @relation(fields: [team_id], references: [id])
+}
+
+/// The environment in a project - to contain secrets
+model Environment {
+  id        String   @id @default(cuid())
+  /// The name of the environment
+  name      String
+  volumes   Volume[]
+  secrets   Secret[]
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String   @map("project_id")
+
+  @@map("environment")
+}
+
+/// A model that represents the shared secrets
+model Secret {
+  id            String       @id @default(cuid())
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+  name          String
+  value         String
+  type          SecretType
+  project       Project      @relation(references: [id], fields: [projectId])
+  projectId     String       @map("project_id")
+  Environment   Environment? @relation(fields: [environmentId], references: [id])
+  environmentId String?      @map("environment_id")
+
+  apps App[] @relation("app_secrets")
+
+  @@map("secret")
+}
+
+model Volume {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  name        String
+  size        Int // Size in Gi
+  location_id String
+  location    Location @relation(fields: [location_id], references: [id])
+
+  // Relations to Project and Environment
+  project       Project     @relation(fields: [projectId], references: [id])
+  projectId     String      @map("project_id")
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  environmentId String      @map("environment_id")
+  storage       Storage[]
+
+  @@map("volume")
+}
