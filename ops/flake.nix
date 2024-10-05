@@ -48,6 +48,11 @@
             rustc
             cargo
             rustup
+
+            # for the backend
+            bun
+            nodePackages.prisma
+            nodePackages.npm
           ];
 
           shellHook = ''
