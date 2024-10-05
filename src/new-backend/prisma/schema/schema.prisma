@@ -18,7 +18,7 @@ model Location {
   /// Resources in this location
   servers  Server[]
   volumes  Volume[]
-  hostings Placement[]
+  placements Placement[]
 }
 
 /// A Packetware server
@@ -36,10 +36,12 @@ model Server {
 
 /// Packetware public IP addresses
 model Address {
-  ip String @id
+  ip String @id @unique
 
   /// The server object this IP address belongs to
   server    Server @relation(references: [id], fields: [server_id])
   /// The ID of the server this IP address belongs to
   server_id String
+  // Application ports open on this address
+  endpoints Endpoint[]
 }

@@ -12,39 +12,35 @@ model Team {
   /// The GitHub integrations this team controls
   git_namespaces       GitNamespace[]
   /// Who's paying?!
-  stripeCustomerId     String?             @map("stripe_customer_id")
+  stripe_customer_id   String?
 }
 
 /// GitHub credentials and config
 model GitNamespace {
-  id                           String    @id @default(cuid())
+  id         String    @id @default(cuid())
   /// Reference to the team
-  team                         Team?     @relation(fields: [team_id], references: [id])
-  team_id                      String?
+  team       Team?     @relation(fields: [team_id], references: [id])
+  team_id    String?
   /// The installation ID from GitHub
-  install_id                   Int?
-  /// The pending authentication code from GitHub
-  pending_auth_code            String?
-  /// When this auth code was started (past 15 minutes, it should expire)
-  pending_auth_code_created_at DateTime?
+  install_id Int?
   /// The repos backed by this namepsace
-  GitRepo                      GitRepo[]
+  git_repos  GitRepo[]
 }
 
 /// A model for a project
 model Project {
-  id           String        @id @default(cuid())
+  id      String   @id @default(cuid())
   /// The name of this project
-  name         String
-  /// The environments this project has
-  environments Environment[]
+  name    String
   /// The apps this this project has
-  apps         App[]
+  apps    App[]
   /// The volumes this project has
-  volumes      Volume[]
+  volumes Volume[]
+  /// The secrets the environment contains
+  secrets Secret[]
   /// Reference to the team that owns this project
-  team_id      String
-  team         Team          @relation(fields: [team_id], references: [id])
+  team_id String
+  team    Team     @relation(fields: [team_id], references: [id])
 }
 
 /// A proverbial join table for a member of a team
@@ -53,45 +49,30 @@ model Member {
   /// What role the user has in this organization
   role MemberRole
 
-  invitedAt            DateTime  @default(now()) @map("invited_at")
-  invitationAccepted   Boolean   @default(false) @map("invitation_accepted")
-  invitationAcceptedAt DateTime? @map("invitation_accepted_at")
+  invited_at             DateTime  @default(now())
+  invitation_accepted    Boolean   @default(false)
+  invitation_accepted_at DateTime?
 
   /// Reference to the user
   user_id String
   user    User    @relation(references: [id], fields: [user_id])
   /// Reference to the team
-  team_id String? @map("team_id")
+  team_id String?
   team    Team?   @relation(fields: [team_id], references: [id])
-}
-
-/// The environment in a project - to contain secrets
-model Environment {
-  id         String   @id @default(cuid())
-  /// The name of the environment
-  name       String
-  /// The secrets the environment contains
-  secrets    Secret[]
-  /// The reference to the project
-  project    Project  @relation(fields: [project_id], references: [id])
-  project_id String
 }
 
 /// A model that represents the shared secrets
 model Secret {
-  id             String       @id @default(cuid())
+  id         String     @id @default(cuid())
   /// Key of the secret
-  key            String
+  key        String
   /// Value of the secret
-  value          String
+  value      String
   /// All secrets are opaque currently
-  type           SecretType
+  type       SecretType
   /// Reference to the project
-  project        Project      @relation(references: [id], fields: [project_id])
-  project_id     String
-  /// Reference to the environment
-  environment    Environment? @relation(fields: [environment_id], references: [id])
-  environment_id String?
+  project    Project    @relation(references: [id], fields: [project_id])
+  project_id String
 }
 
 /// A volume that holds data
