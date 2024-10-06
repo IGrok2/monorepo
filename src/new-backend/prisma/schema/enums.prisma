@@ -8,6 +8,28 @@ enum MemberRole {
   ADMIN
 }
 
+/// The platform resource in question
+enum ResourceType {
+  PROJECT
+  APP
+  VOLUME
+  SECRET
+}
+
+/// Audit logs for teams sorting each action type
+enum ActivityAction {
+  /// Creating resource
+  CREATE
+  /// Modifying resource
+  UPDATE
+  /// Deleting resource
+  DELETE
+  /// Viewing sensitive resource
+  VIEW
+  /// Inviting new member
+  INVITE
+}
+
 /// How we're building an app
 enum BuilderType {
   /// We don't need to build this app (already pulling docker image)

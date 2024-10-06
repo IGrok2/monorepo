@@ -44,8 +44,8 @@ export async function ResetPasswordSend({
       id: user.id,
     },
     data: {
-      passwordResetCode: code,
-      passwordResetCodeSentAt: new Date(),
+      password_reset_code: code,
+      password_reset_code_sent_at: new Date(),
     },
   });
 
@@ -81,7 +81,7 @@ export async function ResetPasswordComplete({
   // pull the user from the database
   const user = await prisma.user.findUnique({
     where: {
-      passwordResetCode: token,
+      password_reset_code: token,
     },
   });
 
@@ -97,7 +97,7 @@ export async function ResetPasswordComplete({
   // make sure the code hasn't expired, they last 15 minutes
   if (
     new Date().getTime() -
-    new Date(user.passwordResetCodeSentAt ?? 0).getTime() >
+    new Date(user.password_reset_code_sent_at ?? 0).getTime() >
     1000 * 60 * 15
   ) {
     return {
@@ -114,8 +114,8 @@ export async function ResetPasswordComplete({
         id: user.id,
       },
       data: {
-        passwordHash: await Bun.password.hash(new_password),
-        passwordResetCode: null,
+        password_hash: await Bun.password.hash(new_password),
+        password_reset_code: null,
         notifications: {
           create: [
             {

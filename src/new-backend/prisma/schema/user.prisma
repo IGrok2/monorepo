@@ -1,6 +1,6 @@
 /// A user in the db
 model User {
-  id            String @id @default(cuid())
+  id            String @id @unique @default(cuid())
   /// User's name. Intended to be a full name.
   name          String
   /// User's email address
@@ -32,7 +32,7 @@ model User {
 
 /// A notification for a user or project
 model Notification {
-  id         String   @id @default(cuid())
+  id         String   @id @unique @default(cuid())
   /// What the notification should display
   message    String
   /// Link to the notification source (if relevant)

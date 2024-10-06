@@ -16,14 +16,14 @@ model Location {
   location String
 
   /// Resources in this location
-  servers  Server[]
-  volumes  Volume[]
+  servers    Server[]
+  volumes    Volume[]
   placements Placement[]
 }
 
 /// A Packetware server
 model Server {
-  id String @id @default(cuid())
+  id String @id @unique @default(cuid())
 
   /// The hostname of the server - this should be cool!
   name        String
@@ -39,7 +39,7 @@ model Address {
   ip String @id @unique
 
   /// The server object this IP address belongs to
-  server    Server @relation(references: [id], fields: [server_id])
+  server    Server     @relation(references: [id], fields: [server_id])
   /// The ID of the server this IP address belongs to
   server_id String
   // Application ports open on this address

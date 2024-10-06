@@ -5,7 +5,12 @@ import { prisma } from "../../app";
 /// Create a new project
 
 export const createProjectInput = z.object({
-  name: z.string().min(1).max(255),
+  name: z
+    .string()
+    .min(1, { message: "Name must not be empty." })
+    .max(255, { message: "Name must not exceed 255 characters." })
+    .regex(/^[a-z0-9-_]+$/, { message: "Name must contain only lowercase letters, numbers, dashes, and underscores." }),
+  team_id: z.string()
 });
 
 export const createProjectOutput = z.object({
@@ -13,7 +18,7 @@ export const createProjectOutput = z.object({
 });
 
 export async function createProject({
-  name,
+  name, team_id,
 }: z.infer<typeof createProjectInput>): Promise<
   WResponse<typeof createProjectOutput>
 > {
@@ -21,13 +26,7 @@ export async function createProject({
   const project = await prisma.project.create({
     data: {
       name,
-      notifications: {
-        create: [
-          {
-            message: `Welcome to ${name}!`,
-          },
-        ],
-      },
+      team_id
     },
   });
 

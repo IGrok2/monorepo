@@ -5,7 +5,7 @@
 model App {
   id              String       @id @default(cuid())
   /// The slug. This is how the app is referenced in the URL on the dashboard and on packetware.app
-  slug            String
+  name            String
   /// The reference to the project which owns this application
   project         Project      @relation(fields: [project_id], references: [id])
   project_id      String
@@ -185,22 +185,4 @@ model Storage {
   volume      Volume @relation(fields: [volume_id], references: [id])
 }
 
-/// A container registry we can pull images from
-model ContainerRegistry {
-  id       String        @id @unique @default(cuid())
-  /// How the user would like to refer to this container registry
-  name     String
-  /// Where we're pulling the image from
-  platform ImagePlatform
-  /// The URL to the container registry
-  url      String
-  /// When we need to authenticate to this container registry, the username
-  username String?
-  /// The password to authenticate to this container registry with
-  password String?
-  /// The team that owns this container registry
-  team     Team?         @relation(fields: [team_id], references: [id])
-  team_id  String?
-  // Images used on this registry
-  images   Image[]
-}
+

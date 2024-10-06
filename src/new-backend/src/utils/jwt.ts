@@ -5,7 +5,7 @@ import { JSON_SIGNING_TOKEN } from "./env";
 
 const jwtRequest = z.object({
   id: z.string(),
-  passwordHash: z.string(),
+  password_hash: z.string(),
 });
 
 /// Create an encrypted JSON web token from a request
@@ -44,7 +44,7 @@ export async function validateJwt(jwt_str: string): Promise<boolean> {
     }
 
     // validate the password has not changed
-    if (user.passwordHash !== data.passwordHash) {
+    if (user.password_hash !== data.password_hash) {
       // keys are invalid across password changes
       return false;
     }
