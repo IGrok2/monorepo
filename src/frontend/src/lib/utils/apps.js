@@ -1,3 +1,4 @@
+import { page } from "$app/stores";
 import { getCookie } from "$lib/utils/auth";
 import { PUBLIC_API } from "$env/static/public";
 import axios from 'axios';

@@ -1,7 +1,5 @@
 <script>
-    import { PUBLIC_API } from "$env/static/public";
-    import logo from "$lib/assets/top-logo.png";
-    import { getCookie } from "$lib/utils/auth.js";
+    import APIClient from "$lib/utils/api";
 
     import { Input } from "$lib/components/ui/input";
     import { Label } from "$lib/components/ui/label";
@@ -9,45 +7,39 @@
 
     import { toast } from "svelte-sonner";
 
-    const token = getCookie("jwt");
-
-    let name;
-    let email;
-    let password;
     let loading = false;
 
-    async function register() {
-        console.log(name, email, password);
-        //if (!loading) {
-        //loading = true;
-        const response = await fetch(`${PUBLIC_API}/auth/register`, {
-            method: "POST",
-            Headers: new Headers({
-                "Content-Type": "application/json",
-                Authorization: token,
-            }),
-            body: JSON.stringify({
-                name,
-                email,
-                password,
-            }),
-        });
+    /** @param {{ currentTarget: EventTarget & HTMLFormElement}} event */
+    async function register(event) {
+        loading = true;
 
-        let res = await response.json();
+        const data = new FormData(event.currentTarget);
+        const name = data.get("name");
+        const email = data.get("email");
+        const password = data.get("password");
 
-        if (res.success) {
-            toast.success(res.message);
-            document.cookie = `jwt=Bearer ${res.token}; path=/`;
-            document.location.href = "/i/dash";
-        } else {
-            toast.error(res.message);
+        let body = {
+            name,
+            email,
+            password,
+        };
+
+        try {
+            let res = await APIClient.post("/auth/register", data);
+            console.log(res);
+
+            toast.success(`${name} successfully registered.`);
+
+            // Set JWT token in a cookie
+            document.cookie = `jwt=${res.data.data.token}; path=/;`;
+            document.location = "/i/dash";
+        } catch (err) {
+            console.log(err);
+            toast.error(err.response.data.data.error.message);
             loading = false;
         }
-        //} else {
-        //toast.loading("Registration is processing");
-        //}
     }
-</script>
+</script>/home/sive/projects/packetware/monorepo-operator/monorepo/src/frontend/src/routes/api
 
 <div
     class="backdrop-blur-sm flex min-h-full flex-col justify-center pb-56 lg:px-8"
@@ -73,28 +65,26 @@
         >
             <form class="space-y-6 backdrop-blur-sm p-4 rounded-lg">
                 <div>
-                    <Label for="email">Email address</Label>
+                    <Label for="name">Name</Label>
                     <div class="mt-2">
                         <Input
-                            bind:value={email}
-                            id="email"
-                            name="email"
-                            type="email"
-                            autocomplete="email"
+                            id="name"
+                            name="name"
+                            type="string"
+                            autocomplete="name"
                             required
                         />
                     </div>
                 </div>
 
                 <div>
-                    <Label for="name">Name</Label>
+                    <Label for="email">Email address</Label>
                     <div class="mt-2">
                         <Input
-                            bind:value={name}
-                            id="name"
-                            name="name"
-                            type="string"
-                            autocomplete="name"
+                            id="email"
+                            name="email"
+                            type="email"
+                            autocomplete="email"
                             required
                         />
                     </div>
@@ -107,7 +97,6 @@
                     <div class="mt-2">
                         <Input
                             id="password"
-                            bind:value={password}
                             name="password"
                             type="password"
                             autocomplete="password"
@@ -116,7 +105,7 @@
                     </div>
                 </div>
 
-                <Button type="submit" class="w-full" on:click={() => register()}
+                <Button type="submit" class="w-full" disabled={loading} on:click={() => register()}
                     >{#if !loading}Create account{:else}Creating account ...{/if}</Button
                 >
             </form>

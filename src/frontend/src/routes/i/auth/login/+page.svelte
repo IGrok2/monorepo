@@ -1,89 +1,41 @@
 <script>
-    import { onMount } from "svelte";
+    import APIClient from "$lib/utils/api";
     import { toast } from "svelte-sonner";
-    import { getCookie } from "$lib/utils/auth";
 
     import { Button } from "$lib/components/ui/button";
     import { Input } from "$lib/components/ui/input";
     import { Label } from "$lib/components/ui/label";
 
-    import { PUBLIC_API } from "$env/static/public";
-
-    let email;
-    let password;
     let loading = false;
 
-    onMount(async () => {
-        // does the jwt cookie exist?
-        if (
-            document.cookie
-                .split(";")
-                .some((item) => item.trim().startsWith("jwt="))
-        ) {
-            // before redirecting, make sure the cookie is valid by fetching a GET to /@/me
-            const token = getCookie("jwt");
-
-            await fetch(`${PUBLIC_API}/@/me`, {
-                method: "GET",
-                headers: new Headers({
-                    "content-type": "application/json",
-                    Authorization: token,
-                }),
-            })
-                .then(async (resp) => {
-                    let response = await resp.json();
-
-                    if (resp.status !== 200 || !response.success) {
-                        // remove the cookie
-                        //document.cookie =
-                            //"jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                    } else {
-                        document.location.href = "/i/dash";
-                    }
-                })
-                .catch(() => {
-                    //document.cookie =
-                        //"jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                });
-        }
-    });
-
-    async function login() {
+    /** @param {{ currentTarget: EventTarget & HTMLFormElement}} event */
+    async function login(event) {
         loading = true;
 
-        let data = JSON.stringify({
+        const data = new FormData(event.currentTarget);
+        const email = data.get("email");
+        const password = data.get("password");
+
+        let body = {
             email,
             password,
-        });
+        };
 
-        // TODO loading effect
-        await fetch(`${PUBLIC_API}/auth/login`, {
-            method: "POST",
-            headers: new Headers({ "content-type": "application/json" }),
-            body: data,
-        })
-            .then(async (resp) => {
-                let response = await resp.json();
+        try {
+            let res = await APIClient.post("/auth/login", body);
+            console.log(res);
 
-                if (!response.success) {
-                    toast.error("An unexpected error occurred");
-                    loading = false;
-                    return;
-                }
+            toast.success("User successfully logged in.");
 
-                toast.success("We're glad to see you!");
-
-                document.cookie = `jwt=Bearer ${response.token}; path=/`;
-
-                document.location.href = "/i/dash";
-            })
-            .catch(() => {
-                loading = false;
-                toast.error("An unexpected error occurred");
-            });
+            // Set JWT token in a cookie
+            document.cookie = `jwt=${res.data.data.token}; path=/;`;
+            document.location = "/i/dash";
+        } catch (err) {
+            console.log(err);
+            toast.error(err.response.data.data.error.message);
+            loading = false;
+        }
     }
-
-    import logo from "$lib/assets/top-logo.png";
 </script>
 
 <div
@@ -116,7 +68,6 @@
                     <Label for="email">Email address</Label>
                     <div class="mt-2">
                         <Input
-                            bind:value={email}
                             id="email"
                             name="email"
                             type="email"
@@ -131,7 +82,7 @@
                         <Label for="password">Password</Label>
                         <div class="text-sm">
                             <a
-                                href="/i/auth/set-password"
+                                href="/i/auth/reset-password"
                                 class="font-semibold text-muted-foreground hover:underline duration-150"
                                 >Forgot password?</a
                             >
@@ -140,7 +91,6 @@
                     <div class="mt-2">
                         <Input
                             id="password"
-                            bind:value={password}
                             name="password"
                             type="password"
                             autocomplete="current-password"
@@ -149,7 +99,7 @@
                     </div>
                 </div>
 
-                <Button type="submit" class="w-full"
+                <Button type="submit" class="w-full" disabled={loading}
                     >{#if !loading}Sign in{:else}Signing in ...{/if}</Button
                 >
             </form>

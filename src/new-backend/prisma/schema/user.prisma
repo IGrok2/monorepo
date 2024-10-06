@@ -1,0 +1,48 @@
+/// A user in the db
+model User {
+  id            String @id @unique @default(cuid())
+  /// User's name. Intended to be a full name.
+  name          String
+  /// User's email address
+  email         String @unique
+  /// User's hashed password
+  password_hash String
+
+  /// User's (depending on expiresAt) active reset code. If not set, no reset is available
+  password_reset_code         String?   @unique
+  /// When the password reset request was made
+  password_reset_code_sent_at DateTime?
+  /// When the reset code was used (and the password was reset) last
+  password_reset_used_at      DateTime?
+
+  /// Whether the email is verified
+  email_verified             Boolean   @default(false)
+  /// The token to be used to validate the email
+  email_token                String?   @unique @default(cuid())
+  /// Last email sent to verify the email, this is how we determine if the code has expired
+  email_verification_sent_at DateTime  @default(now())
+  /// When the email was verified
+  email_verified_at          DateTime?
+
+  /// The notifications that exist for this user
+  notifications Notification[]
+  /// The members that make this project whole
+  Member        Member[]
+}
+
+/// A notification for a user or project
+model Notification {
+  id         String   @id @unique @default(cuid())
+  /// What the notification should display
+  message    String
+  /// Link to the notification source (if relevant)
+  link       String?
+  /// Whether the notification was read
+  seen       Boolean  @default(false)
+  /// When the notification was created
+  created_at DateTime @default(now())
+
+  // Notifications belong to users
+  user    User   @relation(references: [id], fields: [user_id])
+  user_id String
+}

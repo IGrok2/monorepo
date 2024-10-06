@@ -120,7 +120,7 @@
                     alt={post.image.data.attributes.caption}
                 />
             {/if}
-
+            
             <article class="prose prose-invert flex-grow">
                 {@html HTMLSource}
             </article>

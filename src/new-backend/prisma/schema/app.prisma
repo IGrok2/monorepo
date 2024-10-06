@@ -1,0 +1,188 @@
+/// The assorted models for a Packetware application in the database. It includes everything from the actual
+/// App models, to the supporting infrastructure, like the images, environments (secrets), GitHub repos
+
+/// The model for a Packetware app
+model App {
+  id              String       @id @default(cuid())
+  /// The slug. This is how the app is referenced in the URL on the dashboard and on packetware.app
+  name            String
+  /// The reference to the project which owns this application
+  project         Project      @relation(fields: [project_id], references: [id])
+  project_id      String
+  /// The build pipelines created for this app
+  builds          Build[]
+  /// The images that exist for this application
+  images          Image[]
+  /// The deployments for this application
+  deployments     Deployment[]
+  /// The ports exposed for this application
+  endpoint        Endpoint[]
+  /// Where the app is hosted
+  placements      Placement[]
+  /// The storage blocks for this app
+  storage         Storage[]
+  plan            Plan         @relation(fields: [plan_id], references: [id])
+  plan_id         String
+  /// The command to install the required dependencies
+  install_command String?
+  /// The command to build the application
+  build_command   String?
+  /// The entrypoint to start the application
+  run_command     String?
+  /// The channel we'll get new app updates from
+  channel         ChannelType
+  /// How we'll be building this image
+  builder         BuilderType?
+  /// Reference to the GitHub repo we're using for this deployment (if we are)
+  git_repo        GitRepo?
+  /// Whether we should auto deploy when we get webhooks from GitHub
+  auto_deploy     Boolean?
+  /// Whether we should clear the cache on new deployments
+  clear_cache     Boolean
+}
+
+/// Resource quotes for the application instances and billing info.
+model Plan {
+  /// The ID of the plan
+  id         String @id @unique @default(cuid())
+  /// Name of the plan
+  name       String @db.VarChar(255)
+  /// CPU 'm' to use in the container
+  cpu        Int
+  /// Memory 'Mi' to use in the container
+  memory     Int
+  /// Network bandwidth amount of total volume of data transfered 'GB'
+  bandwidth  Int
+  /// Network brandwidth throughput 'Mbps'
+  throughput Int
+
+  /// Apps on this plan
+  apps App[]
+}
+
+/// The image for an application
+model Image {
+  /// The ID of the image
+  id                    String             @id @unique @default(cuid())
+  /// The app reference for this image
+  app_id                String
+  app                   App                @relation(fields: [app_id], references: [id], onDelete: Cascade)
+  /// The URL to this image (for example, `postgres`)
+  url                   String
+  /// If we're pulling this app internally (and not using the container registry model)
+  internal              Boolean
+  /// If we need specific authentication to use the image, hold the credentials
+  container_registry_id String?
+  container_registry    ContainerRegistry? @relation(fields: [container_registry_id], references: [id])
+  /// The build the image could be for
+  build                 Build?
+  /// The deployment the image could be for
+  deployment            Deployment?
+}
+
+/// A GitHub repository we pull images from
+model GitRepo {
+  id                 String        @id @unique @default(cuid())
+  /// The GitHub repository IDs
+  repo_id            Int
+  /// The branch to pull deployments from
+  branch             String
+  /// The subdirectory to build and deploy from
+  subdirectory       String
+  /// Whether we should be using credentials to access this repo
+  credentials_needed Boolean
+  /// The namespace (GitHub credentials and settings) we're using to pull from this repo
+  git_namespace_id   String?
+  git_namespace      GitNamespace? @relation(fields: [git_namespace_id], references: [id])
+  // The app the git repo is for
+  /// The app reference for this image
+  app_id             String        @unique
+  app                App           @relation(fields: [app_id], references: [id], onDelete: Cascade)
+}
+
+/// The model for an application built on the platform
+model Build {
+  id            String      @id @unique @default(cuid())
+  /// Reference to the app this build is for
+  app_id        String
+  app           App         @relation(fields: [app_id], references: [id], onDelete: Cascade)
+  /// How this app was built
+  builder       BuilderType
+  /// The created image reference
+  image_id      String?     @unique
+  image         Image?      @relation(fields: [image_id], references: [id])
+  /// The Git commit SHA
+  revision      String
+  /// The current status of this build
+  status        BuildStatus
+  /// The ID of the build logs in s3
+  logs          String      @default(cuid())
+  // Deployment the build is attached to
+  deployment    Deployment  @relation(fields: [deployment_id], references: [id])
+  deployment_id String      @unique
+}
+
+/// The model for a deployment (shipping it to the Packetware edge)
+model Deployment {
+  id       String           @id @unique @default(cuid())
+  /// The reference to the app
+  app_id   String
+  app      App              @relation(fields: [app_id], references: [id], onDelete: Cascade)
+  /// If this deployment is active
+  active   Boolean
+  /// If we're deploying from GitHub or a pre-built image
+  channel  ChannelType
+  /// If using the image channel, reference to the image
+  image_id String?          @unique
+  image    Image?           @relation(fields: [image_id], references: [id])
+  /// If using the GitHub channel, reference to the build
+  build    Build?
+  /// The status of the deployment
+  status   DeploymentStatus
+}
+
+/// An exposed port on Packetware
+model Endpoint {
+  id                  String       @id @unique @default(cuid())
+  app_id              String
+  app                 App          @relation(fields: [app_id], references: [id], onDelete: Cascade)
+  /// The name of the exposed port
+  name                String
+  /// The listening port on the container
+  port                Int
+  /// Currently unimplemented (we're only doing HTTP now) - but for TCP / UDP applications
+  protocol            PortProtocol
+  // The anycast address used for this app endpoint
+  external_address_id String?
+  external_address    Address?     @relation(fields: [external_address_id], references: [ip])
+  external_port       Int?
+}
+
+/// Where this app has been scheduled
+model Placement {
+  id               String   @id @unique @default(cuid())
+  /// Reference to the upstream app
+  app_id           String
+  app              App      @relation(fields: [app_id], references: [id], onDelete: Cascade)
+  /// Reference to the location that this app has affinity for
+  location_id      String
+  location         Location @relation(fields: [location_id], references: [id])
+  /// The amount of replicas we'd like in this location
+  desired_replicas Int
+  /// The service IP of the app location instance
+  cluster_ip       String
+}
+
+/// Model for app storage
+model Storage {
+  id          String @id @unique @default(cuid())
+  app_id      String
+  app         App    @relation(fields: [app_id], references: [id], onDelete: Cascade)
+  /// Where to mount the volume
+  mount_point String
+  /// Reference to the app we'd like to mount
+  volume_id   String
+  volume      Volume @relation(fields: [volume_id], references: [id])
+}
+
+

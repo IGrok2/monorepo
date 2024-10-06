@@ -36,7 +36,7 @@ export async function Login({
   }
 
   // validate the password
-  if (!(await Bun.password.verify(password, user.passwordHash))) {
+  if (!(await Bun.password.verify(password, user.password_hash))) {
     return {
       error: {
         status: 400,

@@ -1,5 +1,6 @@
 <script>
     import {draw} from "svelte/transition";
+    import Notifications from "$lib/components/notifications/Notifications.svelte";
 
     let popup = false;
 

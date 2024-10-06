@@ -22,7 +22,7 @@ export async function VerifyEmail({
   // pull the user from the database
   const user = await prisma.user.findUnique({
     where: {
-      emailToken: code,
+      email_token: code,
     },
   });
 
@@ -38,7 +38,7 @@ export async function VerifyEmail({
   // make sure the code hasn't expired, they last 24 hours
   if (
     new Date().getTime() -
-      new Date(user.emailVerificationMailSentAt).getTime() >
+      new Date(user.email_verification_sent_at).getTime() >
     1000 * 60 * 60 * 24
   ) {
     return {
@@ -54,9 +54,9 @@ export async function VerifyEmail({
       id: user.id,
     },
     data: {
-      emailToken: null,
-      emailVerified: true,
-      emailVerifiedAt: new Date(),
+      email_token: null,
+      email_verified: true,
+      email_verified_at: new Date(),
     },
   });
 

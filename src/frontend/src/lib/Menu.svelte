@@ -102,7 +102,7 @@
                 api engine
             </a>
         {/if}
-
+         
         {#if page_rules}
             <a role="list" class="hover:italic bg-gradient-to-r {page_rules_class} to-fuchsia-700 text-white group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold border-2"
                href="./page_rules">
@@ -258,7 +258,7 @@
                 origin settings
             </a>
         {/if}
-        <!--
+        <!-- 
         {#if old_buckets}
             <a role="list" class="hover:italic bg-fuchsia-500 text-white group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold border-2 hover:bg-fuchsia-600"
                href="./old_buckets">
@@ -278,7 +278,7 @@
                 old_buckets
             </a>
         {/if}
-
+            
         {#if analytics}
             <a
                 role="list"
@@ -302,7 +302,7 @@
 
                 analytics
             </a>
-
+        
         {:else}
             <a
                 role="list"

@@ -1,7 +1,7 @@
 
 // takes array, gets passed the array and the index of the change, and the change itself
 // saving this for later, makes more sense to do locally atm
-/*export const calculateChanges = (array, index, change) => {
+export const calculateChanges = (array, index, change) => {
     // array is the array of objects, index is the desired index, change is the change to make (a JSON object)
 
     // make a temp array
@@ -15,7 +15,7 @@
     // if so, remove it from the array, and no changes need to be made
 
 
-}*/
+}
 
 export const getChanges = (array) => {
     let new_array = [];

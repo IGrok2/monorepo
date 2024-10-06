@@ -1,0 +1,47 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+/// A Packetware Point of Presence
+model Location {
+  /// The name of this location, ex dallas
+  id       String @id @db.VarChar(255)
+  /// Exact location name, ex Dallas, Texas
+  location String
+
+  /// Resources in this location
+  servers    Server[]
+  volumes    Volume[]
+  placements Placement[]
+}
+
+/// A Packetware server
+model Server {
+  id String @id @unique @default(cuid())
+
+  /// The hostname of the server - this should be cool!
+  name        String
+  /// The public IP addresses of this server
+  addresses   Address[]
+  /// The points of
+  location    Location  @relation(fields: [location_id], references: [id])
+  location_id String
+}
+
+/// Packetware public IP addresses
+model Address {
+  ip String @id @unique
+
+  /// The server object this IP address belongs to
+  server    Server     @relation(references: [id], fields: [server_id])
+  /// The ID of the server this IP address belongs to
+  server_id String
+  // Application ports open on this address
+  endpoints Endpoint[]
+}

@@ -2,7 +2,7 @@ import { error } from "@sveltejs/kit";
 import { PUBLIC_CMS } from '$env/static/public';
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load() {
+export async function load({ params }) {
     const fetchTOS = async () => {
         console.log('TOS Load Ran');
         const res = await fetch(`${PUBLIC_CMS}/api/terms-of-service`);

@@ -13,7 +13,7 @@
   <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
     <!--
         Notification panel, dynamically insert this into the live region when it needs to be displayed
-
+  
         Entering: "transform ease-out duration-300 transition"
           From: "translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
           To: "translate-y-0 opacity-100 sm:translate-x-0"

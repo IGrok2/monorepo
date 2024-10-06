@@ -1,0 +1,137 @@
+/// The model for a Team
+model Team {
+  id                   String              @id @unique @default(cuid())
+  /// The name of the team
+  name                 String
+  /// The projects this team owns
+  projects             Project[]
+  /// The users which are a member of this team
+  members              Member[]
+  /// The container registries this team controls
+  container_registries ContainerRegistry[]
+  /// The GitHub integrations this team controls
+  git_namespaces       GitNamespace[]
+  /// Who's paying?!
+  stripe_customer_id   String?
+  /// Actions team members are taking
+  Activity             Activity[]
+}
+
+/// Audit log of whats happening within a team
+model Activity {
+  id          String         @id @unique @default(cuid())
+  /// Reference to the team
+  team        Team           @relation(fields: [team_id], references: [id])
+  team_id     String
+  /// What person did the action
+  member      Member         @relation(fields: [member_id], references: [id])
+  member_id   String
+  /// What kind of resource was this action taken on
+  resource    ResourceType
+  resource_id String
+  /// What catagory of action was taken
+  action      ActivityAction
+  /// Short message to describe the activity
+  message     String
+  /// json serializable data about the activity
+  data        Json?
+}
+
+/// GitHub credentials and config
+model GitNamespace {
+  id         String    @id @unique @default(cuid())
+  /// Reference to the team
+  team       Team?     @relation(fields: [team_id], references: [id])
+  team_id    String?
+  /// The installation ID from GitHub
+  install_id Int?
+  /// The repos backed by this namepsace
+  git_repos  GitRepo[]
+}
+
+/// A container registry we can pull images from
+model ContainerRegistry {
+  id       String        @id @unique @default(cuid())
+  /// How the user would like to refer to this container registry
+  name     String
+  /// Where we're pulling the image from
+  platform ImagePlatform
+  /// The URL to the container registry
+  url      String
+  /// When we need to authenticate to this container registry, the username
+  username String?
+  /// The password to authenticate to this container registry with
+  password String?
+  /// The team that owns this container registry
+  team     Team?         @relation(fields: [team_id], references: [id])
+  team_id  String?
+  // Images used on this registry
+  images   Image[]
+}
+
+/// A model for a project
+model Project {
+  id      String   @id @unique @default(cuid())
+  /// The name of this project
+  name    String
+  /// The apps this this project has
+  apps    App[]
+  /// The volumes this project has
+  volumes Volume[]
+  /// The secrets the environment contains
+  secrets Secret[]
+  /// Reference to the team that owns this project
+  team_id String
+  team    Team     @relation(fields: [team_id], references: [id])
+}
+
+/// A proverbial join table for a member of a team
+model Member {
+  id   String     @id @unique @default(cuid())
+  /// What role the user has in this organization
+  role MemberRole
+
+  invited_at             DateTime  @default(now())
+  invitation_accepted    Boolean   @default(false)
+  invitation_accepted_at DateTime?
+
+  /// Reference to the user
+  user_id  String
+  user     User       @relation(references: [id], fields: [user_id])
+  /// Reference to the team
+  team_id  String?
+  team     Team?      @relation(fields: [team_id], references: [id])
+  /// Actions this member has taken
+  Activity Activity[]
+}
+
+/// A model that represents the shared secrets
+model Secret {
+  id         String     @id @unique @default(cuid())
+  /// Key of the secret
+  key        String
+  /// Value of the secret
+  value      String
+  /// All secrets are opaque currently
+  type       SecretType
+  /// Reference to the project
+  project    Project    @relation(references: [id], fields: [project_id])
+  project_id String
+}
+
+/// A volume that holds data
+model Volume {
+  id   String @id @unique @default(cuid())
+  /// Name of the volume
+  name String
+  /// Size of the volume in Gi
+  size Int
+
+  /// Reference to the location the volume is in
+  location_id String
+  location    Location  @relation(fields: [location_id], references: [id])
+  /// Reference to the project the volume is in
+  project     Project   @relation(fields: [project_id], references: [id])
+  project_id  String
+  storage     Storage[]
+}

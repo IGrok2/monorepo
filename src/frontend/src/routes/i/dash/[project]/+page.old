@@ -1,0 +1,536 @@
+<script>
+    import { page } from "$app/stores";
+    console.log($page);
+
+    import { Separator } from "$lib/components/ui/separator";
+    import * as Tabs from "$lib/components/ui/tabs";
+    import { Button } from "$lib/components/ui/button";
+    import * as Card from "$lib/components/ui/card";
+    import * as Dialog from "$lib/components/ui/dialog";
+    import * as Avatar from "$lib/components/ui/avatar";
+    import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+    import { Input } from "$lib/components/ui/input";
+    import { Folder, MoreHorizontal, ChevronDown, Disc } from "lucide-svelte";
+
+    import Activity from "./(components)/Activity.svelte";
+    import Members from "./(components)/Members.svelte";
+    import Settings from "./(components)/Settings.svelte";
+    import NewApp from "./(components)/NewApp.svelte";
+
+    import Spinner from "$lib/components/Spinner.svelte";
+
+    import { toast } from "svelte-sonner";
+
+    /** @type {import('./$types').PageData} */
+    export let data;
+
+    let loaded = false;
+
+    let project;
+    let domains;
+    let containers;
+    let volumes;
+
+    let invitationDialog = false;
+
+    let noDomainsDialog = false;
+    let newDomainDialog = false;
+    let newDomain = "";
+    $: console.log(newDomain);
+
+    let newAppDialog = false;
+
+    let newMemberDialog = false;
+    let newMemberEmail = "";
+    let newMemberRole = 0;
+
+    async function fetchProject() {
+        console.log($page.params.project);
+        const response = await fetch(
+            `${PUBLIC_API}/@/project/${$page.params.project}`,
+            {
+                method: "GET",
+                headers: new Headers({
+                    "content-type": "application/json",
+                    Authorization: token,
+                }),
+            },
+        );
+
+        const res = await response.json();
+        console.log(res);
+
+        if (res.success) {
+            project = res.project;
+            data.project = project;
+            domains = res.domains;
+            containers = res.containers;
+            volumes = res.volumes;
+
+            setupFavicons();
+
+            loaded = true;
+        } else {
+            if (res.invited) {
+                invitationDialog = true;
+                project = res.project;
+            } else {
+                toast.error(res.message);
+            }
+        }
+    }
+
+    // iterate through the apps and fetch the favicon
+    async function setupFavicons() {
+        for (let j = 0; j < containers.length; j++) {
+            fetchFavicon(
+                `https://app-${containers[j]._id}.onpacketware.net`,
+            ).then((res) => {
+                containers[j].favicon = res;
+            });
+        }
+
+        for (let j = 0; j < domains.length; j++) {
+            fetchFavicon(`https://${domains[j]._id}`).then((res) => {
+                domains[j].favicon = res;
+            });
+        }
+    }
+
+    async function fetchFavicon(url) {
+        const response = await fetch("/api/getFavicon", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url }),
+        });
+
+        const res = await response.json();
+
+        if (res.success) {
+            return res.data;
+        } else {
+            return `${url}/favicon.ico`;
+        }
+    }
+
+    //fetchProject();
+
+    async function invitation(accept) {
+        toast.loading("Processing request...");
+        const response = await fetch(
+            `${PUBLIC_API}/@/me/invitation/${$page.params.project}`,
+            {
+                method: "POST",
+                headers: new Headers({
+                    "content-type": "application/json",
+                    Authorization: token,
+                }),
+                body: JSON.stringify({ accept }),
+            },
+        );
+
+        const res = await response.json();
+        console.log(res);
+
+        if (res.success) {
+            toast.success(res.message);
+
+            if (accept) {
+                document.location.reload();
+            } else {
+                document.location = `/i/dash/`;
+            }
+        } else {
+            toast.error(res.message);
+        }
+    }
+
+    async function invite() {
+        toast.loading("Processing request...");
+        const response = await fetch(
+            `${PUBLIC_API}/@/project/${$page.params.project}/user/invite`,
+            {
+                method: "POST",
+                headers: new Headers({
+                    "content-type": "application/json",
+                    Authorization: token,
+                }),
+                body: JSON.stringify({ email: newMemberEmail }),
+            },
+        );
+
+        const res = await response.json();
+        console.log(res);
+
+        if (res.success) {
+            toast.success(res.message);
+            newMemberDialog = false;
+            newMemberEmail = "";
+        } else {
+            toast.error(res.message);
+        }
+    }
+
+    async function createDomain() {
+        console.log("test");
+        const response = await fetch(
+            `${PUBLIC_API}/@/project/${$page.params.project}/domain-admin/create-domain`,
+            {
+                method: "POST",
+                headers: new Headers({
+                    "content-type": "application/json",
+                    Authorization: token,
+                }),
+                body: JSON.stringify({ domain: newDomain }),
+            },
+        );
+
+        const res = await response.json();
+        console.log(res);
+
+        if (res.success) {
+            domains.push(res.domain);
+
+            newDomainDialog = false;
+
+            toast.success(res.message);
+
+            document.location = `/i/dash/project/${$page.params.project}/domains/${newDomain}`;
+        } else {
+            toast.error(res.message);
+        }
+    }
+</script>
+
+<div class="container py-4">
+    <div class="flex justify-between">
+        <h1 class="text-4xl font-bold flex items-center">
+            {#if !loaded}Loading Project...{:else}{project.name}{/if}
+        </h1>
+        <DropdownMenu.Root>
+            <DropdownMenu.Trigger
+                ><Button variant="outline"
+                    >Add<ChevronDown class="ml-2 w-4 h-4" /></Button
+                ></DropdownMenu.Trigger
+            >
+            <DropdownMenu.Content>
+                <DropdownMenu.Group>
+                    <DropdownMenu.Item on:click={() => (newDomainDialog = true)}
+                        >Domain</DropdownMenu.Item
+                    >
+                    <DropdownMenu.Item on:click={() => (newAppDialog = true)}
+                        >App</DropdownMenu.Item
+                    >
+                    <!--<DropdownMenu.Item
+                        href={`/i/dash/project/${$page.params.project}/apps/new`}
+                        >App</DropdownMenu.Item
+                    >-->
+                    <DropdownMenu.Item on:click={() => (newMemberDialog = true)}
+                        >Member</DropdownMenu.Item
+                    >
+                </DropdownMenu.Group>
+            </DropdownMenu.Content>
+        </DropdownMenu.Root>
+    </div>
+</div>
+
+<div class="container">
+    <Tabs.Root value="resources">
+        <Tabs.List>
+            <Tabs.Trigger value="resources">Resources</Tabs.Trigger>
+            <Tabs.Trigger value="members">Members</Tabs.Trigger>
+            <Tabs.Trigger value="settings">Settings</Tabs.Trigger>
+            <Tabs.Trigger value="activity">Activity</Tabs.Trigger>
+            <Tabs.Trigger value="billing">Billing</Tabs.Trigger>
+        </Tabs.List>
+        {#if !loaded}
+            <Spinner />
+        {:else}
+            <Tabs.Content value="resources">
+                <!-- Domains -->
+                <h3
+                    class="text-2xl font-bold text-center text-muted-foreground"
+                >
+                    Domains
+                </h3>
+                <div
+                    class="my-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                >
+                    {#each domains as domain}
+                        <Card.Root>
+                            <Card.Header>
+                                <div class="flex justify-between">
+                                    <div class="flex">
+                                        <Avatar.Root>
+                                            <Avatar.Image
+                                                src={domain.favicon}
+                                            />
+                                            <Avatar.Fallback
+                                                >{domain._id.charAt(
+                                                    0,
+                                                )}{domain._id.charAt(
+                                                    domain._id.split(".")[0]
+                                                        .length - 1,
+                                                )}</Avatar.Fallback
+                                            >
+                                        </Avatar.Root>
+                                        <div class="items-center">
+                                            <Card.Title
+                                                ><Button
+                                                    href="/i/dash/project/{$page
+                                                        .params
+                                                        .project}/domains/{domain._id}"
+                                                    variant="link"
+                                                    >{domain._id}</Button
+                                                ></Card.Title
+                                            >
+                                            <!-- <Card.Description class="w-full"
+                                                >{domain.glance.total} requests,
+                                                {domain.glance.security} security
+                                                events,
+                                                {domain.glance.errors} errors
+                                            </Card.Description> -->
+                                        </div>
+                                    </div>
+                                    <DropdownMenu.Root>
+                                        <DropdownMenu.Trigger
+                                            asChild
+                                            let:builder
+                                        >
+                                            <Button
+                                                variant="ghost"
+                                                builders={[builder]}
+                                                ><MoreHorizontal /></Button
+                                            >
+                                        </DropdownMenu.Trigger>
+                                        <DropdownMenu.Content>
+                                            <DropdownMenu.Group>
+                                                <DropdownMenu.Item
+                                                    href="/i/dash/project/{$page
+                                                        .params
+                                                        .project}/domains/{domain}/settings"
+                                                    >Settings</DropdownMenu.Item
+                                                >
+                                                <DropdownMenu.Item
+                                                    href="/i/dash/project/{$page
+                                                        .params
+                                                        .project}/domains/{domain}"
+                                                    >Analytics</DropdownMenu.Item
+                                                >
+                                            </DropdownMenu.Group>
+                                        </DropdownMenu.Content>
+                                    </DropdownMenu.Root>
+                                </div>
+                                <Card.Description>
+                                    {domain.glance.total} requests, {domain
+                                        .glance.security} security events, {domain
+                                        .glance.errors} errors.
+                                </Card.Description>
+                            </Card.Header>
+                        </Card.Root>
+                    {/each}
+                </div>
+                <Separator class="mb-4" />
+                <!-- Apps -->
+                <h3
+                    class="text-2xl font-bold text-center text-muted-foreground"
+                >
+                    Apps
+                </h3>
+                <div
+                    class="my-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                >
+                    {#each containers as container}
+                        <Card.Root class="">
+                            <Card.Header>
+                                <div class="flex justify-between">
+                                    <div class="flex">
+                                        <Avatar.Root>
+                                            <Avatar.Image
+                                                src={container.favicon}
+                                            />
+                                            <Avatar.Fallback
+                                                >{container.name.charAt(
+                                                    0,
+                                                )}{container.name.charAt(
+                                                    container.name.split(".")[0]
+                                                        .length - 1,
+                                                )}</Avatar.Fallback
+                                            >
+                                        </Avatar.Root>
+                                        <div class="flex items-center">
+                                            <Card.Title>
+                                                <Button
+                                                    href="/i/dash/project/{$page
+                                                        .params
+                                                        .project}/apps/{container._id}"
+                                                    variant="link"
+                                                    >{container.name}</Button
+                                                ></Card.Title
+                                            >
+                                        </div>
+                                    </div>
+                                    <DropdownMenu.Root>
+                                        <DropdownMenu.Trigger
+                                            asChild
+                                            let:builder
+                                        >
+                                            <Button
+                                                variant="ghost"
+                                                builders={[builder]}
+                                                ><MoreHorizontal /></Button
+                                            >
+                                        </DropdownMenu.Trigger>
+                                        <DropdownMenu.Content>
+                                            <DropdownMenu.Group>
+                                                <DropdownMenu.Item
+                                                    >Logs</DropdownMenu.Item
+                                                >
+                                                <DropdownMenu.Item
+                                                    >Settings</DropdownMenu.Item
+                                                >
+                                            </DropdownMenu.Group>
+                                        </DropdownMenu.Content>
+                                    </DropdownMenu.Root>
+                                </div>
+                                <Card.Description>
+                                    {container.glance.total} requests, {container
+                                        .glance.security} security events, {container
+                                        .glance.errors} errors.
+                                </Card.Description>
+                            </Card.Header>
+                        </Card.Root>
+                    {/each}
+                </div>
+                <Separator class="mb-4" />
+                <!-- Volumes -->
+                <h3
+                    class="text-2xl font-bold text-center text-muted-foreground"
+                >
+                    Volumes
+                </h3>
+                <div
+                    class="my-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                >
+                    {#each volumes as volume}
+                        <Card.Root class="">
+                            <Card.Header>
+                                <div class="flex items-center">
+                                    <Disc />
+                                    <Card.Title>
+                                        <Button
+                                            href="/i/dash/project/{$page.params
+                                                .project}/volumes/{volume._id}"
+                                            variant="link">{volume.name}</Button
+                                        ></Card.Title
+                                    >
+
+                                    <Card.Description>
+                                        Size: {volume.size}GB
+                                    </Card.Description>
+                                </div></Card.Header
+                            >
+                        </Card.Root>
+                    {/each}
+                </div>
+            </Tabs.Content>
+            <Tabs.Content value="members"
+                ><Members members={project.users} /></Tabs.Content
+            >
+            <Tabs.Content value="settings">
+                <Settings />
+            </Tabs.Content>
+            <Tabs.Content value="activity">
+                <Activity activity={project.activity} />
+            </Tabs.Content>
+        {/if}
+    </Tabs.Root>
+</div>
+
+<!-- Project invitation dialog -->
+<Dialog.Root bind:open={invitationDialog}>
+    <!-- <form action="POST" on:submit|preventDefault={createDomain()}> -->
+    <Dialog.Content>
+        <Dialog.Header>
+            <Dialog.Title>Would you like to join {project.name}?</Dialog.Title>
+            <Dialog.Description>
+                Becoming a team member of a project will grant you certain
+                permissions that will allow you to modify or view certain
+                resources.
+            </Dialog.Description>
+        </Dialog.Header>
+        <Dialog.Footer>
+            <Button
+                on:click={() => invitation(true)}
+                type="submit"
+                variant="outline">Accept</Button
+            >
+            <Button
+                on:click={() => invitation(false)}
+                type="submit"
+                variant="destructive">Decline</Button
+            >
+        </Dialog.Footer>
+    </Dialog.Content>
+    <!-- </form> -->
+</Dialog.Root>
+
+<!-- Add domain dialog -->
+<Dialog.Root bind:open={newDomainDialog}>
+    <!-- <form action="POST" on:submit|preventDefault={() => { createDomain(); }}> -->
+        <Dialog.Content>
+            <Dialog.Header>
+                <Dialog.Title>Add Domain</Dialog.Title>
+                <Dialog.Description>
+                    Add the name of your domain and we can take you through the
+                    process of using it with the Packetware platform.
+                </Dialog.Description>
+            </Dialog.Header>
+            <Input placeholder="domain.tld" bind:value={newDomain} />
+            <Dialog.Footer>
+                <Button type="submit" on:click={() => { createDomain(); }}>Submit</Button>
+            </Dialog.Footer>
+        </Dialog.Content>
+    <!--</form>-->
+</Dialog.Root>
+
+<!-- New app dialog -->
+<Dialog.Root bind:open={newAppDialog}>
+    <Dialog.Content>
+        <Dialog.Header>
+            <Dialog.Title>Select Git Repository</Dialog.Title>
+            <Dialog.Description>
+                Get ready to deploy your new project
+            </Dialog.Description>
+        </Dialog.Header>
+        <NewApp />
+        <!--<Dialog.Footer>
+            <Button type="submit" on:click={() => invite()}>Submit</Button>
+        </Dialog.Footer>-->
+    </Dialog.Content>
+</Dialog.Root>
+
+<!-- Add member dialog -->
+<Dialog.Root bind:open={newMemberDialog}>
+    <!-- <form action="POST" on:submit|preventDefault={createDomain()}> -->
+    <Dialog.Content>
+        <Dialog.Header>
+            <Dialog.Title>Add Project Team Member</Dialog.Title>
+            <Dialog.Description>
+                In order to have multiple individuals manage a projects you have
+                to invite project team members on.
+            </Dialog.Description>
+        </Dialog.Header>
+        <Input
+            type="email"
+            placeholder="your-name@email.com"
+            bind:value={newMemberEmail}
+        />
+        <Dialog.Footer>
+            <Button type="submit" on:click={() => invite()}>Submit</Button>
+        </Dialog.Footer>
+    </Dialog.Content>
+    <!-- </form> -->
+</Dialog.Root>

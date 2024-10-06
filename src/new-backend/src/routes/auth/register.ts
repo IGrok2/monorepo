@@ -43,13 +43,13 @@ export async function Register({
     data: {
       name,
       email,
-      passwordHash: await Bun.password.hash(password),
+      password_hash: await Bun.password.hash(password),
       notifications: {
         create: [
           {
             message: "Welcome to Packetware!",
             seen: false,
-            createdAt: new Date(),
+            created_at: new Date(),
           },
         ],
       },
@@ -64,7 +64,7 @@ export async function Register({
   await sendUserWelcomeEmail(email, { name });
   await sendVerifyUserEmail(email, {
     name,
-    verifyUrl: BASE_URL + "/verify?token=" + user.emailToken,
+    verifyUrl: BASE_URL + "/verify?token=" + user.email_token,
   });
 
   return { success: { message: "Welcome to Packetware!", token: jwt } };

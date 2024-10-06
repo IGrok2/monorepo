@@ -1,9 +1,9 @@
-import { error, fail } from "@sveltejs/kit";
+import { error, fail, json } from "@sveltejs/kit";
 
 import { PRIVATE_API } from "$env/static/private";
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ cookies }) {
+export async function load({ params, cookies }) {
     const token = cookies.get(`jwt`);
 
     const response = await fetch(`${PRIVATE_API}/@/me`, {
