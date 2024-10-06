@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { WResponse } from "../../wrpc/theoretical";
+import type { WResponse } from "../../../wrpc/theoretical";
 
 /// Modifying the project, like creating new apps or adding members
 

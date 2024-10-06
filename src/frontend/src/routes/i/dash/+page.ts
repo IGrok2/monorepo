@@ -14,6 +14,6 @@ export const load: PageLoad = async ({ parent }) => {
 	const projects = await getProjects()
 
 	return {
-		projects: projects
+		projects: {}
 	};
 };

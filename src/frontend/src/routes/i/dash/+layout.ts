@@ -12,7 +12,7 @@ export const load: LayoutLoad = async ({ parent }) => {
     //let res2 = await APIClient.get(`/project/test-project`);
 
     try {
-        let res = await APIClient.get(`/user/`);
+        let res = await APIClient.get(`/i/user`);
 
         return {
             user: res.data.data.user

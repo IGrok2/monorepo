@@ -64,6 +64,6 @@ export async function HandleRequest(req: Request) {
 
   //return resp !== null ? resp : NotFound();
   return resp
-    ? new Response(resp.body, { status: resp.status, headers })
+    ? new Response(resp.body, { status: resp.status, headers: { ...resp.headers, ...headers } })
     : NotFound();
 }

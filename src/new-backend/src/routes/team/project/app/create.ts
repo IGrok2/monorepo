@@ -1,8 +1,8 @@
 /// Create a Packetware application from a GitHub repo or a Docker image
 
 import { number, z } from "zod";
-import type { WResponse } from "../../../wrpc/theoretical";
-import { prisma } from "../../../app";
+import type { WResponse } from "../../../../wrpc/theoretical";
+import { prisma } from "../../../../app";
 import { AppStatus, DeploymentPhase } from "@prisma/client";
 
 export const AppsInput = z.object({

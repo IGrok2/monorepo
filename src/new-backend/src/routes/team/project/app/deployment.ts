@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { WResponse } from "../../../wrpc/theoretical";
-import { prisma } from "../../../app";
+import type { WResponse } from "../../../../wrpc/theoretical";
+import { prisma } from "../../../../app";
 import { DeploymentPhase } from "@prisma/client";
 
 /// For creating manual deployments
