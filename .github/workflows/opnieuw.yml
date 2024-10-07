@@ -15,6 +15,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Run Rust nightly
+        run: rustup default nightly
+
       - name: Run fmt
         working-directory: src/opnieuw
         run: rustfmt --config-path=rustfmt.toml --edition 2021 src/**/*.rs
