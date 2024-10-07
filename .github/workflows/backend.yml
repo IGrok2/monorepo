@@ -21,6 +21,7 @@ jobs:
       - name: Run the linter
         run: |
           curl -L https://nixos.org/nix/install | sh -s -- --no-daemon
+          . /home/runner/.nix-profile/etc/profile.d/nix.sh
           direnv allow
           eval "$(direnv export bash)"
           cd src/new-backend
