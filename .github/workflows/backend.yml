@@ -20,6 +20,8 @@ jobs:
 
       - name: Run the linter
         run: |
+          eval "$(direnv export bash)"
+          direnv allow
           cd src/new-backend
           bun install
           bunx prettier --write .

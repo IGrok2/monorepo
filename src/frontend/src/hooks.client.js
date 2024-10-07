@@ -1,5 +1,5 @@
 import { handleErrorWithSentry, Replay } from "@sentry/sveltekit";
-import * as Sentry from '@sentry/sveltekit';
+import * as Sentry from "@sentry/sveltekit";
 
 //import { PUBLIC_SENTRY_ENV } from '$env/static/public';
 

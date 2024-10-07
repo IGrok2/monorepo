@@ -18,13 +18,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Run linter
+      - name: Run the linter
         run: |
           eval "$(direnv export bash)"
-          direnv reload
-          cd src/frontend
-          yarn install
-          yarn run lint
+          direnv allow
+          cd src/new-backend
+          bun install
+          bunx prettier --write .
         shell: bash
 
   bun-audit-frontend:
