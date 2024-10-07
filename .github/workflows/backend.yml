@@ -13,17 +13,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install direnv
-        run: sudo apt update && sudo apt install -y direnv
       - name: Check out the code
         uses: actions/checkout@v2
+      - uses: oven-sh/setup-bun@v2
 
       - name: Run the linter
         run: |
-          curl -L https://nixos.org/nix/install | sh -s -- --no-daemon
-          . /home/runner/.nix-profile/etc/profile.d/nix.sh
-          direnv allow
-          eval "$(direnv export bash)"
           cd src/new-backend
           bun install
           bunx prettier --write .
