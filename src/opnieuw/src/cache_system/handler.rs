@@ -1,20 +1,43 @@
-use std::fs;
-use std::fs::read;
-use tokio::fs::File;
-use tokio::io::{self, AsyncRead, AsyncReadExt, AsyncWriteExt, BufWriter, ReadBuf};
-use std::io::{BufReader};
-use std::path::Path;
-use std::pin::Pin;
-use std::sync::Arc;
-use std::sync::atomic::AtomicBool;
-use std::task::{Context, Poll};
-use std::thread::sleep;
-use std::time::{Duration, Instant};
-use futures::io::Read;
-use futures::{pin_mut, Stream, StreamExt};
+use futures::{
+    io::Read,
+    pin_mut,
+    Stream,
+    StreamExt,
+};
 use pin_project_lite::pin_project;
-use tokio::{select, task};
-
+use std::{
+    fs,
+    fs::read,
+    io::BufReader,
+    path::Path,
+    pin::Pin,
+    sync::{
+        atomic::AtomicBool,
+        Arc,
+    },
+    task::{
+        Context,
+        Poll,
+    },
+    thread::sleep,
+    time::{
+        Duration,
+        Instant,
+    },
+};
+use tokio::{
+    fs::File,
+    io::{
+        self,
+        AsyncRead,
+        AsyncReadExt,
+        AsyncWriteExt,
+        BufWriter,
+        ReadBuf,
+    },
+    select,
+    task,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
@@ -24,15 +47,15 @@ async fn main() -> Result<(), std::io::Error> {
 
     let mut opened = File::open(&file).await.unwrap();
     /*
-        for _ in 0..1000 {
-            let bytes = "\nhello\n".as_bytes();
+       for _ in 0..1000 {
+           let bytes = "\nhello\n".as_bytes();
 
-            writer.write_all(bytes).await.unwrap();
-        }
+           writer.write_all(bytes).await.unwrap();
+       }
 
-        println!("sleeping");
+       println!("sleeping");
 
-     */
+    */
 
     // sleep(Duration::from_secs(10));
 
@@ -52,13 +75,13 @@ async fn main() -> Result<(), std::io::Error> {
         read_amount: 0,
     };
 
-    reader.for_each(|obj| {
-        futures::executor::block_on(
-            buf_writer.write_all(&obj)
-        ).unwrap();
+    reader
+        .for_each(|obj| {
+            futures::executor::block_on(buf_writer.write_all(&obj)).unwrap();
 
-        futures::future::ready(())
-    }).await;
+            futures::future::ready(())
+        })
+        .await;
 
     if buf_writer.buffer().len() != 0 {
         buf_writer.flush().await.unwrap();
@@ -84,7 +107,7 @@ pub struct Finished {
 
 pub enum Status {
     InProgress(CacheWriter),
-    Finished(Finished)
+    Finished(Finished),
 }
 /*
 impl CachedObject {

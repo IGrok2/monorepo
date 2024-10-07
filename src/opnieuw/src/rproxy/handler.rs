@@ -1,9 +1,13 @@
-use std::str::FromStr;
-use std::sync::Arc;
-use std::time::Duration;
-use actix_http::header::HeaderName;
-use actix_http::Version;
+use actix_http::{
+    header::HeaderName,
+    Version,
+};
 use actix_web::http::header::HeaderValue;
+use std::{
+    str::FromStr,
+    sync::Arc,
+    time::Duration,
+};
 
 use actix_web::web::Payload;
 use http_body_util::BodyStream;
@@ -15,49 +19,68 @@ use awc::body::BodyStream;
 use awc::error::SendRequestError;
 use rustls::ClientConfig;
 
-use {
-    crate::models::request_context::RequestContext,
-    actix_web::{HttpResponse, HttpResponseBuilder},
-    awc::Client,
-    url::Url,
+use crate::{
+    cache_system::writer::CacheWriter,
+    debug,
+    handler::pipeline::{
+        caching::models::CacheLevel,
+        human_engine::smart_challenge::CookieTester,
+    },
+    models::{
+        domain_context::OriginSetting,
+        egress_wrapper::EgressWrapper,
+        request_context::{
+            PipelineData,
+            RequestContext,
+        },
+    },
+    tools::resp::add_headers,
+    vars::vars::{
+        NODE_NAME,
+        VERSION,
+    },
+    EGRESS_HEADERS,
+    GA,
+    ORDER,
 };
-use crate::handler::pipeline::caching::models::CacheLevel;
-use crate::models::domain_context::OriginSetting;
-use crate::tools::resp::add_headers;
-use crate::vars::vars::{NODE_NAME, VERSION};
-use crate::models::request_context::PipelineData;
-use crate::{debug, EGRESS_HEADERS, GA, ORDER};
-use crate::cache_system::writer::CacheWriter;
-use crate::handler::pipeline::human_engine::smart_challenge::CookieTester;
-use crate::models::egress_wrapper::EgressWrapper;
+use actix_web::{
+    HttpResponse,
+    HttpResponseBuilder,
+};
+use awc::Client;
+use url::Url;
 //use crate::rproxy::inbound_wrapper::InboundWrapper;
-use crate::rproxy::pipeline::utils::get_content_length;
-use crate::utils::counter::Counter;
-use crate::rproxy::outbound_wrapper::OutboundWrapper;
-use crate::ssl::cert_roots::webpki_roots_cert_store;
+use crate::{
+    rproxy::{
+        outbound_wrapper::OutboundWrapper,
+        pipeline::utils::get_content_length,
+    },
+    ssl::cert_roots::webpki_roots_cert_store,
+    utils::counter::Counter,
+};
 
-
-pub async fn call_backend ( // ring it up!
+pub async fn call_backend(
+    // ring it up!
     context: RequestContext,
     origin: (Arc<OriginSetting>, (Url, Option<String>)),
     data: Vec<PipelineData>,
-    payload: Payload
+    payload: Payload,
 ) -> HttpResponse {
     context.domain.analytic.proxied_reqs.inc();
 
-    let host = match origin.1.1 {
+    let host = match origin.1 .1 {
         Some(t) => t.clone(),
         None => context.full_host.clone(),
     };
 
     // build the new URL path to the origin
-    let mut new_url: Url = origin.1.0.clone(); // we need to clone because we're going to make some modifications
+    let mut new_url: Url = origin.1 .0.clone(); // we need to clone because we're going to make some modifications
     new_url.set_path(context.req.uri.path());
     new_url.set_query(context.req.uri.query());
 
-    let port = origin.1.0.port().unwrap_or(80);
+    let port = origin.1 .0.port().unwrap_or(80);
 
-    let stream = TcpStream::connect((origin.1.0))
+    let stream = TcpStream::connect((origin.1 .0));
 
     // Build the http version
     let (mut sender, conn) = Builder::new()
@@ -72,7 +95,7 @@ pub async fn call_backend ( // ring it up!
 
     match origin.0.http2 {
         true => version = Version::HTTP_2,
-        false => version = Version::HTTP_11
+        false => version = Version::HTTP_11,
     };
 
     let mut prepped_res = match origin.0.ssl {
@@ -82,7 +105,9 @@ pub async fn call_backend ( // ring it up!
                 .with_root_certificates(webpki_roots_cert_store())
                 .with_no_client_auth();
 
-            config.dangerous().set_certificate_verifier(Arc::new(danger::NoCertificateVerification));
+            config
+                .dangerous()
+                .set_certificate_verifier(Arc::new(danger::NoCertificateVerification));
 
             if origin.0.http2 {
                 config.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
@@ -90,8 +115,7 @@ pub async fn call_backend ( // ring it up!
 
             Client::builder()
                 .disable_redirects()
-                .connector(awc::Connector::new()
-                    .rustls_021(Arc::new(config)))
+                .connector(awc::Connector::new().rustls_021(Arc::new(config)))
                 .finish()
                 .request_from(new_url.as_str(), context.req.head()) // building off this "base"
                 .timeout(origin.0.timeout) // set the timeout for this request
@@ -100,7 +124,7 @@ pub async fn call_backend ( // ring it up!
                 .insert_header(("Pw-Connecting-IP", context.ip.as_str()))
                 .insert_header(("Cf-Connecting-IP", context.ip.as_str()))
                 .insert_header(("Host", host))
-        },
+        }
         false => {
             Client::builder()
                 .disable_redirects()
@@ -120,7 +144,9 @@ pub async fn call_backend ( // ring it up!
         if let Ok(cookie) = t.to_str() {
             if let Some(start_index) = cookie.find("__pw_loves_you=") {
                 if let Some(end_index) = cookie[start_index..].find(";").map(|i| start_index + i) {
-                    if let Ok(mut ending_value) = HeaderValue::from_str(&(cookie[..start_index].to_string() + &cookie[end_index..])) {
+                    if let Ok(mut ending_value) = HeaderValue::from_str(
+                        &(cookie[..start_index].to_string() + &cookie[end_index..]),
+                    ) {
                         *t = ending_value;
                     }
                 }
@@ -137,7 +163,8 @@ pub async fn call_backend ( // ring it up!
         prepped_res = prepped_res.insert_header(("Accept-Encoding", ""));
     }
 
-    if origin.0.ip_data { // they have ip data enabled
+    if origin.0.ip_data {
+        // they have ip data enabled
         let ip_data = context.get_ipdata();
         GA.rproxy.ip_data_requested.inc();
 
@@ -152,7 +179,8 @@ pub async fn call_backend ( // ring it up!
     GA.rproxy.sent_to_backend.inc();
     let ctx = EgressWrapper::new(context);
 
-    if ctx.ctx.stream_allowed.load(ORDER) { // if the api engine indicated that it was OK to send data here
+    if ctx.ctx.stream_allowed.load(ORDER) {
+        // if the api engine indicated that it was OK to send data here
         GA.rproxy.stream_allowed.inc();
         sent_res = prepped_res.send_stream(payload).await;
     } else {
@@ -160,25 +188,25 @@ pub async fn call_backend ( // ring it up!
         sent_res = prepped_res.send().await;
     }
 
-
     let res;
 
-    match sent_res
-    {
+    match sent_res {
         Ok(client) => {
-            use std::ops::DerefMut; if let Some(ref mut t) = ctx.ctx.by_example.borrow_mut().deref_mut() {
+            use std::ops::DerefMut;
+            if let Some(ref mut t) = ctx.ctx.by_example.borrow_mut().deref_mut() {
                 t.proxy.hit = true;
                 t.proxy.response_code = Some(client.status().as_u16());
-                t.proxy.origin_setting_ip = origin.1.0.to_string();
+                t.proxy.origin_setting_ip = origin.1 .0.to_string();
             }
 
             res = client
         }
         Err(error) => {
-            use std::ops::DerefMut; if let Some(ref mut t) = ctx.ctx.by_example.borrow_mut().deref_mut() {
+            use std::ops::DerefMut;
+            if let Some(ref mut t) = ctx.ctx.by_example.borrow_mut().deref_mut() {
                 t.proxy.hit = true;
                 t.proxy.errored = Some(format!("{:?}", error));
-                t.proxy.origin_setting_ip = origin.1.0.to_string();
+                t.proxy.origin_setting_ip = origin.1 .0.to_string();
             }
 
             match error {
@@ -221,9 +249,14 @@ pub async fn call_backend ( // ring it up!
 
     let content_length = get_content_length(&res);
 
-    let mut cache_level = ctx.ctx.should_cache(&res, &data, &cache_key, content_length);
+    let mut cache_level = ctx
+        .ctx
+        .should_cache(&res, &data, &cache_key, content_length);
 
-    debug!("cache level response: {:?}, {:?}", cache_level.0, cache_level.1);
+    debug!(
+        "cache level response: {:?}, {:?}",
+        cache_level.0, cache_level.1
+    );
 
     let mut resp = HttpResponseBuilder::new(res.status());
 
@@ -233,8 +266,7 @@ pub async fn call_backend ( // ring it up!
             cache_level.0 = CacheLevel::Null;
         }
 
-        resp
-            .insert_header((i, v));
+        resp.insert_header((i, v));
     }
 
     let mut encoding = false;
@@ -258,12 +290,15 @@ pub async fn call_backend ( // ring it up!
     if turbo_mode {
         if content_length > 0 {
             // then, change the header to allow for more content length
-            resp
-                .insert_header(("Content-Length", content_length + 35));
+            resp.insert_header(("Content-Length", content_length + 35));
         }
     }
 
-    ctx.ctx.domain.analytic.data_transferred_outbound.inc_by(res.headers().len() as i64 * 10);
+    ctx.ctx
+        .domain
+        .analytic
+        .data_transferred_outbound
+        .inc_by(res.headers().len() as i64 * 10);
 
     // these should only be set if it's being cached!
 
@@ -273,7 +308,8 @@ pub async fn call_backend ( // ring it up!
 
     if content_length != 0 {
         match cache_level.0 {
-            CacheLevel::Standard | CacheLevel::Aggressive | CacheLevel::IgnoreQueryString => { // TODO: make sure request doesn't have a query string
+            CacheLevel::Standard | CacheLevel::Aggressive | CacheLevel::IgnoreQueryString => {
+                // TODO: make sure request doesn't have a query string
                 let mut caching_confirmed = false;
 
                 // see if it's too big to be individually cached
@@ -284,7 +320,10 @@ pub async fn call_backend ( // ring it up!
                 }
 
                 // check the total store
-                if ctx.ctx.domain.caching_settings.bucket.total_size.get() + (content_length / 1000) as i64 > ctx.ctx.domain.internal_settings.total_cache_limit as i64 {
+                if ctx.ctx.domain.caching_settings.bucket.total_size.get()
+                    + (content_length / 1000) as i64
+                    > ctx.ctx.domain.internal_settings.total_cache_limit as i64
+                {
                     GA.rproxy.cache_max_hit.inc();
 
                     cache_level = (CacheLevel::Null, None);
@@ -302,14 +341,16 @@ pub async fn call_backend ( // ring it up!
                         ttl = Some(ctx.ctx.domain.caching_settings.default_cache_ttl)
                     }
 
-                    cache_allocation = CacheWriter::new(ctx.ctx.domain.clone(),
-                      // TODO change TTL back
-                      ttl.unwrap(),
-                          (ctx.ctx.full_host.clone() + ctx.ctx.req.path()),
-                          headers,
-                          status,
-                        content_length
-                    ).await;
+                    cache_allocation = CacheWriter::new(
+                        ctx.ctx.domain.clone(),
+                        // TODO change TTL back
+                        ttl.unwrap(),
+                        (ctx.ctx.full_host.clone() + ctx.ctx.req.path()),
+                        headers,
+                        status,
+                        content_length,
+                    )
+                    .await;
                 } else {
                     (&mut resp).insert_header(("pw-cache", "blown"));
                 }
@@ -338,9 +379,9 @@ pub async fn call_backend ( // ring it up!
 
 // section for our certificate validator
 mod danger {
-    use std::time::SystemTime;
     use super::*;
     use rustls::client::ServerCertVerifier;
+    use std::time::SystemTime;
 
     pub struct NoCertificateVerification;
 
@@ -353,7 +394,7 @@ mod danger {
             _server_name: &rustls::ServerName,
             _scts: &mut dyn Iterator<Item = &[u8]>,
             _oscp_response: &[u8],
-            _now: SystemTime
+            _now: SystemTime,
         ) -> Result<rustls::client::ServerCertVerified, rustls::Error> {
             Ok(rustls::client::ServerCertVerified::assertion())
         }

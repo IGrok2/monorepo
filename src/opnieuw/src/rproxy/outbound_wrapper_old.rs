@@ -1,28 +1,59 @@
 // wrapper for the streamed response that we get from servers
 
-use std::pin::Pin;
-use std::task::{Context, Poll};
-use actix_web::body::{BodySize, MessageBody};
-use awc::error::PayloadError;
-use bytes::{Buf, Bytes};
-use crate::utils::counter::Counter;
-use futures_util::{ready, Stream};
-use pin_project_lite::pin_project;
-use std::sync::{Arc};
-use std::time::{Duration, Instant};
-use awc::http::header::HeaderMap;
-use crate::handler::pipeline::caching::models::{CacheLevel};
-use crate::models::domain_context::DomainContext;
-use awc::http::StatusCode;
+use crate::{
+    cache_system::writer::CacheWriter,
+    debug,
+    handler::pipeline::caching::models::CacheLevel,
+    models::{
+        domain_context::DomainContext,
+        egress_wrapper::EgressWrapper,
+        request_context::RequestContext,
+    },
+    rproxy::{
+        outbound_wrapper::HeartInsertable::{
+            Done,
+            Yes,
+        },
+        pipeline::compression::compress_zip,
+    },
+    utils::counter::Counter,
+    BACKGROUND_CHALLENGE,
+    GA,
+};
+use actix_web::body::{
+    BodySize,
+    MessageBody,
+};
+use awc::{
+    error::PayloadError,
+    http::{
+        header::HeaderMap,
+        StatusCode,
+    },
+};
+use bytes::{
+    Buf,
+    Bytes,
+};
 use dashmap::DashMap;
+use futures_util::{
+    ready,
+    Stream,
+};
+use pin_project_lite::pin_project;
 use sled::IVec;
-use crate::{BACKGROUND_CHALLENGE, GA};
-use crate::cache_system::writer::{CacheWriter};
-use crate::debug;
-use crate::models::egress_wrapper::EgressWrapper;
-use crate::models::request_context::RequestContext;
-use crate::rproxy::outbound_wrapper::HeartInsertable::{Done, Yes};
-use crate::rproxy::pipeline::compression::compress_zip;
+use std::{
+    pin::Pin,
+    sync::Arc,
+    task::{
+        Context,
+        Poll,
+    },
+    time::{
+        Duration,
+        Instant,
+    },
+};
 
 pub type BoxedPayloadStream = Pin<Box<dyn Stream<Item = Result<Bytes, PayloadError>>>>;
 
@@ -99,7 +130,7 @@ impl<B: MessageBody> OutboundWrapper<B> {
         alleged_size: u64,
         heart_insertable_bool: bool,
         encoding: bool,
-        cached_obj: Option<CacheWriter>
+        cached_obj: Option<CacheWriter>,
     ) -> OutboundWrapper<B> {
         GA.rproxy.new_stream.inc();
 
@@ -111,7 +142,7 @@ impl<B: MessageBody> OutboundWrapper<B> {
 
         let heart_insertable = match heart_insertable_bool {
             true => HeartInsertable::Yes,
-            false => HeartInsertable::No
+            false => HeartInsertable::No,
         };
 
         OutboundWrapper {
@@ -143,8 +174,10 @@ impl<B: MessageBody> MessageBody for OutboundWrapper<B> {
         BodySize::Stream // this is a stream
     }
 
-    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) ->
-                                                             Poll<Option<Result<Bytes, Self::Error>>> {
+    fn poll_next(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Option<Result<Bytes, Self::Error>>> {
         GA.rproxy.poll_next_requests.inc();
 
         if self.alleged_size > 0 {
@@ -158,7 +191,7 @@ impl<B: MessageBody> MessageBody for OutboundWrapper<B> {
         let this = self.project();
 
         if *this.heart_insertable == Done {
-            return Poll::Ready(None)
+            return Poll::Ready(None);
         }
 
         match ready!(this.stream.poll_next(cx)) {
@@ -175,9 +208,7 @@ impl<B: MessageBody> MessageBody for OutboundWrapper<B> {
                     Poll::Ready(Some(Ok(chunk)))
                 }
             }
-            Some(Err(err)) => {
-                Poll::Ready(Some(Err(err)))
-            },
+            Some(Err(err)) => Poll::Ready(Some(Err(err))),
             None => {
                 if *this.heart_insertable == Yes {
                     *this.heart_insertable = Done;
@@ -185,11 +216,13 @@ impl<B: MessageBody> MessageBody for OutboundWrapper<B> {
                     this.req.ctx.domain.analytic.turbo_mode_served.inc();
                     GA.rproxy.turbo_mode_inserted.inc();
 
-                    return Poll::Ready(Some(Ok(Bytes::from(r##"<script src="/__pw/bg-js"></script>"##))))
+                    return Poll::Ready(Some(Ok(Bytes::from(
+                        r##"<script src="/__pw/bg-js"></script>"##,
+                    ))));
                 }
 
                 Poll::Ready(None)
-            },
+            }
         }
     }
 }
@@ -198,5 +231,5 @@ impl<B: MessageBody> MessageBody for OutboundWrapper<B> {
 pub enum HeartInsertable {
     No,
     Yes,
-    Done
+    Done,
 }

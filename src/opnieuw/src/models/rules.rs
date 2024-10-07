@@ -1,6 +1,8 @@
 /// DEPRECATED
-
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 
 pub struct ApiEngineRule {
     // if it matches the path
@@ -10,9 +12,9 @@ pub struct ApiEngineRule {
     pub header: (bool, String, String),
     // then, check the rule
     pub rule: (), // the rule that should be applied at this path
-        // ALLOWED method
-        // ALLOWED headers
-        // ALLOWED IP
+    // ALLOWED method
+    // ALLOWED headers
+    // ALLOWED IP
 
     // if it hits
     pub match_action: Action,
@@ -21,16 +23,15 @@ pub struct ApiEngineRule {
 }
 
 pub struct PageRule {
-
     pub action: Action,
 }
 
 // default deny
 pub enum Action {
-    Block, // block the connection based on the criteria
+    Block,                             // block the connection based on the criteria
     Ratelimit { bucket_name: String }, // ratelimit this connection, using the specified bucket_name
-    Cache { }, // TODO: send directly to the cache, let it do the work there ... this should have some data soon
-    Bypass, // bypass all security checks and send directly to backend
+    Cache {}, // TODO: send directly to the cache, let it do the work there ... this should have some data soon
+    Bypass,   // bypass all security checks and send directly to backend
 }
 
 /* I think, right now, these should be built ontop of ApiEngineRule

@@ -1,9 +1,13 @@
 // DEPRACTED - we add these backend headers directly now
 
-use hyper::http::request::Builder;
-use hyper::Response;
-use crate::cache_system::models::CachedObject;
-use crate::EGRESS_HEADERS;
+use crate::{
+    cache_system::models::CachedObject,
+    EGRESS_HEADERS,
+};
+use hyper::{
+    http::request::Builder,
+    Response,
+};
 
 impl CachedObject {
     pub fn add_backend_headers(&self, mut builder: Builder) -> Builder {
@@ -15,6 +19,6 @@ impl CachedObject {
         }
         builder = builder.header("pw-cache", "hit");
 
-        return builder
+        return builder;
     }
 }
