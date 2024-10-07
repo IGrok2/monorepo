@@ -77,7 +77,7 @@ export async function ResetPasswordComplete({
 }: z.infer<typeof ResetPasswordCompleteInput>): Promise<
   WResponse<typeof ResetPasswordCompleteOutput>
 > {
-  console.log("hello")
+  console.log("hello");
   // pull the user from the database
   const user = await prisma.user.findUnique({
     where: {
@@ -97,7 +97,7 @@ export async function ResetPasswordComplete({
   // make sure the code hasn't expired, they last 15 minutes
   if (
     new Date().getTime() -
-    new Date(user.password_reset_code_sent_at ?? 0).getTime() >
+      new Date(user.password_reset_code_sent_at ?? 0).getTime() >
     1000 * 60 * 15
   ) {
     return {
@@ -107,7 +107,7 @@ export async function ResetPasswordComplete({
       },
     };
   }
-  console.log("hello")
+  console.log("hello");
   console.log(
     await prisma.user.update({
       where: {
@@ -124,7 +124,8 @@ export async function ResetPasswordComplete({
           ],
         },
       },
-    }));
+    }),
+  );
 
   return {
     success: {

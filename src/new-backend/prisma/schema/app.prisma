@@ -184,5 +184,3 @@ model Storage {
   volume_id   String
   volume      Volume @relation(fields: [volume_id], references: [id])
 }
-
-

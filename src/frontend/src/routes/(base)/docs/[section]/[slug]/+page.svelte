@@ -1,9 +1,9 @@
 <script>
     /** @type {import('./$types').PageData} */
     export let data;
-    
+
     import MarkdownIt from "markdown-it";
-    
+
     //import TableOfContents from "./(components)/TableOfContents.svelte";
 
     let HTMLSource = `Loading...`;
@@ -38,7 +38,7 @@
     <meta name="twitter:creator" content="@packetware" />
     <meta name="twitter:label2" content="Published on" />
     <meta name="twitter:data2" content={doc.createdAt} />
-    <!-- 
+    <!--
 	{#if doc.image.data != null}
 	<meta
 		name="og:image"
@@ -64,7 +64,7 @@
     <p class="mt-2 text-xl text-gray-400">
         {doc.description}
     </p>
-    <!-- Video Embed 
+    <!-- Video Embed
     {#if doc.video}
         <div style="position:relative;padding-top:56.25%;">
             <iframe

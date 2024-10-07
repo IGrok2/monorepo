@@ -39,7 +39,7 @@
     <div class="hidden lg:flex lg:flex-1 lg:justify-end">
         <a on:click={() => {document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; document.location.href = "/i/dash/domains";}} href="/i/auth/login" class="text-sm font-semibold leading-6 text-white">Log out <span aria-hidden="true">&rarr;</span></a>
     </div>
-</nav> 
+</nav>
 -->
 
 <nav

@@ -23,11 +23,7 @@ import {
   ModifyUserInput,
   ModifyUserOutput,
 } from "../routes/user/modify";
-import {
-  GetUser,
-  GetUserInput,
-  GetUserOutput,
-} from "../routes/user/get";
+import { GetUser, GetUserInput, GetUserOutput } from "../routes/user/get";
 import { validateJwt } from "./jwt";
 
 export type Status = number;
@@ -76,8 +72,12 @@ export const ServerRoutes: Routes = {
       prefix: "/i",
       middleware: async (req: Request, resolve: any, reject: any) => {
         const cookieHeader = req.headers.get("Cookie");
-        const cookies = cookieHeader ? Object.fromEntries(cookieHeader.split('; ').map(cookie => cookie.split('='))) : {};
-        const jwtCookie = cookies['jwt'];
+        const cookies = cookieHeader
+          ? Object.fromEntries(
+              cookieHeader.split("; ").map((cookie) => cookie.split("=")),
+            )
+          : {};
+        const jwtCookie = cookies["jwt"];
         if (jwtCookie) {
           if (await validateJwt(jwtCookie ?? "")) {
             resolve("correct JWT");

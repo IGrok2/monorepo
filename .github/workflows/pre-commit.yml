@@ -10,7 +10,7 @@ on:
 
 jobs:
   pre-commit:
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
     steps:
       - name: Install direnv
         run: sudo apt-get update && sudo apt-get install -y direnv

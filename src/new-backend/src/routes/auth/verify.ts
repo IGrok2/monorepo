@@ -37,8 +37,7 @@ export async function VerifyEmail({
 
   // make sure the code hasn't expired, they last 24 hours
   if (
-    new Date().getTime() -
-      new Date(user.email_verification_sent_at).getTime() >
+    new Date().getTime() - new Date(user.email_verification_sent_at).getTime() >
     1000 * 60 * 60 * 24
   ) {
     return {

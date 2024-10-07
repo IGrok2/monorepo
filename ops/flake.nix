@@ -38,7 +38,9 @@
             go-protobuf
             protoc-gen-go-grpc
 
+            # pre-commit
             pre-commit
+            nodePackages.prettier
 
             # for sveltekit
             nodejs
@@ -51,7 +53,6 @@
 
             # for the backend
             bun
-            nodePackages.prisma
             nodePackages.npm
           ];
 

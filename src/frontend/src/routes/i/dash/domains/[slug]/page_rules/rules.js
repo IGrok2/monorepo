@@ -100,7 +100,7 @@ const newPageRule = async (rule, domain) => {
 }
 
 const editPageRule = async (rule, domain) => {
-    
+
 }
 
 

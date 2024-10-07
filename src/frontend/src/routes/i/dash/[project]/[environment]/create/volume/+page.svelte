@@ -1,7 +1,7 @@
 <script>
     import APIClient from "$lib/utils/api";
     import { page } from "$app/stores";
-    
+
     import { toast } from "svelte-sonner";
     import { Button } from "$lib/components/ui/button";
     import * as Card from "$lib/components/ui/card";
