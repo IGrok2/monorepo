@@ -16,11 +16,12 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run fmt
-        run: |
-          cd src/opnieuw
-          cargo fmt
-          git diff --exit-code
+        working-directory: src/opnieuw
+        run: cargo fmt
         shell: bash
+
+      - name: Check for lint diffs
+        run: git diff --exit-code
 
   clippy:
     runs-on: ubuntu-latest
@@ -29,8 +30,8 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run clippy
+        working-directory: src/opnieuw
         run: |
           sudo apt install protobuf-compiler -y
-          cd src/opnieuw
           cargo clippy
         shell: bash

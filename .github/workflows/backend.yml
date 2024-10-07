@@ -18,8 +18,8 @@ jobs:
       - uses: oven-sh/setup-bun@v2
 
       - name: Run the linter
+        working-directory: src/new-backend
         run: |
-          cd src/new-backend
           bun install
           bunx prettier --write .
 
