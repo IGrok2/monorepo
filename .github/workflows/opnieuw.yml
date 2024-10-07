@@ -16,7 +16,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run Rust nightly
-        run: rustup default nightly
+        run: |
+          rustup default nightly
+          rustup component add rustfmt
 
       - name: Run fmt
         working-directory: src/opnieuw
