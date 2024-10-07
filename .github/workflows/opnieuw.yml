@@ -20,7 +20,7 @@ jobs:
 
       - name: Run fmt
         working-directory: src/opnieuw
-        run: rustfmt --config-path=rustfmt.toml --edition 2021 src/**/*.rs
+        run: cargo fmt
         shell: bash
 
       - name: Check for lint diffs
