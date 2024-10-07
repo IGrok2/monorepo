@@ -20,6 +20,7 @@ jobs:
 
       - name: Run the linter
         run: |
+          direnv allow
           eval "$(direnv export bash)"
           direnv allow
           cd src/new-backend
