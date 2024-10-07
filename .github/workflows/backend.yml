@@ -20,9 +20,9 @@ jobs:
 
       - name: Run the linter
         run: |
+          curl -L https://nixos.org/nix/install | sh -s -- --no-daemon
           direnv allow
           eval "$(direnv export bash)"
-          direnv allow
           cd src/new-backend
           bun install
           bunx prettier --write .
