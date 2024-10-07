@@ -9,38 +9,20 @@ on:
       - main
 
 jobs:
-  eslint-frontend:
+  frontend-lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Install direnv
-        run: sudo apt-get update && sudo apt-get install -y direnv
-
       - name: Checkout
         uses: actions/checkout@v2
+      - uses: oven-sh/setup-bun@v2
 
       - name: Run the linter
         run: |
-          eval "$(direnv export bash)"
-          direnv allow
           cd src/new-backend
           bun install
           bunx prettier --write .
+          bunx eslint .
         shell: bash
 
-  bun-audit-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install direnv
-        run: sudo apt-get update && sudo apt-get install -y direnv
-
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Run linter
-        run: |
-          eval "$(direnv export bash)"
-          direnv reload
-          cd src/frontend
-          yarn install
-          yarn audit
-        shell: bash
+      - name: Check for differences
+        run: git diff --exit-code
