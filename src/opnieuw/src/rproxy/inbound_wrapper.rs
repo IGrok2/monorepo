@@ -1,17 +1,27 @@
-use bytes::Bytes;
-use std::pin::Pin;
-use std::task::{Context, Poll, ready};
+use crate::{
+    models::domain_context::{
+        DomainContext,
+        InternalSettings,
+    },
+    utils::counter::Counter,
+};
 use actix_http::error::PayloadError;
+use bytes::Bytes;
 use futures_core::Stream;
 use pin_project_lite::pin_project;
-use crate::utils::counter::Counter;
-use std::sync::Arc;
-use crate::models::domain_context::{DomainContext, InternalSettings};
+use std::{
+    pin::Pin,
+    sync::Arc,
+    task::{
+        ready,
+        Context,
+        Poll,
+    },
+};
 // the wrapper for incoming streams
 
 /// A boxed payload stream.
 pub type BoxedPayloadStream = Pin<Box<dyn Stream<Item = Result<Bytes, PayloadError>>>>;
-
 
 pin_project! {
     pub struct InboundWrapper<S = BoxedPayloadStream> {
@@ -26,7 +36,7 @@ impl InboundWrapper {
         Self {
             stream,
             context,
-            counter: Counter::new()
+            counter: Counter::new(),
         }
     }
 }
@@ -40,15 +50,18 @@ impl Stream for InboundWrapper {
         match ready!(Pin::new(this.stream).poll_next(cx)) {
             Some(Ok(t)) => {
                 // increment counter
-                this.context.analytic.data_transferred_inbound.inc_by(t.len() as i64 / 1000);
+                this.context
+                    .analytic
+                    .data_transferred_inbound
+                    .inc_by(t.len() as i64 / 1000);
 
                 return if this.counter.inc_by(t.len() as i64 / 1000).get() < 10_000_000 {
                     Poll::Ready(Some(Ok(t)))
                 } else {
                     Poll::Ready(None)
-                }
-            },
-            _ => Poll::Ready(None) // stream has no more
+                };
+            }
+            _ => Poll::Ready(None), // stream has no more
         }
     }
 }

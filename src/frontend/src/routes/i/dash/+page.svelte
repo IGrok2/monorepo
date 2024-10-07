@@ -132,13 +132,13 @@
 
                     <!--
                     <Card.Content>
-                        
+
                             <Card.Description>
                                 <span class="text-sm text-gray-500">
                                     {project.total} requests{(project.security !== 0) ? `, ${project.security} security events` : ``}{(project.errors !== 0) ? `, ${project.errors} errors` : ``}{(project.environments[0].apps.length !== 0 || project.domains.length !== 0) ? `: ` : ``}{project.environments[0].apps.length !== 0 ? (project.environments[0].apps.length === 1 ? `1 app` : `${project.environments[0].apps.length} apps`) : ``} {(project.domains.length !== 0 && project.environments[0].apps.length !== 0) ? `&` : ``} {project.domains.length !== 0 ? (project.domains.length === 1 ? `1 domain` : `${project.domains.length} domains`) : ``}
                                 </span>
                             </Card.Description>
-                            
+
                     </Card.Content>-->
                 </Card.Root>
             </a>

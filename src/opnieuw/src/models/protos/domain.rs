@@ -13,8 +13,10 @@ pub struct DomainSchema {
 /// Generated client implementations.
 pub mod domain_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
-    use tonic::codegen::*;
-    use tonic::codegen::http::Uri;
+    use tonic::codegen::{
+        http::Uri,
+        *,
+    };
     #[derive(Debug, Clone)]
     pub struct DomainClient<T> {
         inner: tonic::client::Grpc<T>,
@@ -58,9 +60,8 @@ pub mod domain_client {
                     <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
                 >,
             >,
-            <T as tonic::codegen::Service<
-                http::Request<tonic::body::BoxBody>,
-            >>::Error: Into<StdError> + Send + Sync,
+            <T as tonic::codegen::Service<http::Request<tonic::body::BoxBody>>>::Error:
+                Into<StdError> + Send + Sync,
         {
             DomainClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -99,38 +100,31 @@ pub mod domain_client {
             &mut self,
             request: impl tonic::IntoRequest<super::DomainSchema>,
         ) -> std::result::Result<tonic::Response<super::QueryResponse>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/domain.Domain/NewDomain");
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("domain.Domain", "NewDomain"));
+            req.extensions_mut()
+                .insert(GrpcMethod::new("domain.Domain", "NewDomain"));
             self.inner.unary(req, path, codec).await
         }
         pub async fn delete_domain(
             &mut self,
             request: impl tonic::IntoRequest<super::DomainSchema>,
         ) -> std::result::Result<tonic::Response<super::QueryResponse>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/domain.Domain/DeleteDomain",
-            );
+            let path = http::uri::PathAndQuery::from_static("/domain.Domain/DeleteDomain");
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("domain.Domain", "DeleteDomain"));
@@ -177,10 +171,7 @@ pub mod domain_server {
                 max_encoding_message_size: None,
             }
         }
-        pub fn with_interceptor<F>(
-            inner: T,
-            interceptor: F,
-        ) -> InterceptedService<Self, F>
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> InterceptedService<Self, F>
         where
             F: tonic::service::Interceptor,
         {
@@ -236,13 +227,9 @@ pub mod domain_server {
                 "/domain.Domain/NewDomain" => {
                     #[allow(non_camel_case_types)]
                     struct NewDomainSvc<T: Domain>(pub Arc<T>);
-                    impl<T: Domain> tonic::server::UnaryService<super::DomainSchema>
-                    for NewDomainSvc<T> {
+                    impl<T: Domain> tonic::server::UnaryService<super::DomainSchema> for NewDomainSvc<T> {
                         type Response = super::QueryResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::DomainSchema>,
@@ -278,21 +265,15 @@ pub mod domain_server {
                 "/domain.Domain/DeleteDomain" => {
                     #[allow(non_camel_case_types)]
                     struct DeleteDomainSvc<T: Domain>(pub Arc<T>);
-                    impl<T: Domain> tonic::server::UnaryService<super::DomainSchema>
-                    for DeleteDomainSvc<T> {
+                    impl<T: Domain> tonic::server::UnaryService<super::DomainSchema> for DeleteDomainSvc<T> {
                         type Response = super::QueryResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
+                        type Future = BoxFuture<tonic::Response<Self::Response>, tonic::Status>;
                         fn call(
                             &mut self,
                             request: tonic::Request<super::DomainSchema>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                (*inner).delete_domain(request).await
-                            };
+                            let fut = async move { (*inner).delete_domain(request).await };
                             Box::pin(fut)
                         }
                     }
@@ -319,18 +300,14 @@ pub mod domain_server {
                     };
                     Box::pin(fut)
                 }
-                _ => {
-                    Box::pin(async move {
-                        Ok(
-                            http::Response::builder()
-                                .status(200)
-                                .header("grpc-status", "12")
-                                .header("content-type", "application/grpc")
-                                .body(empty_body())
-                                .unwrap(),
-                        )
-                    })
-                }
+                _ => Box::pin(async move {
+                    Ok(http::Response::builder()
+                        .status(200)
+                        .header("grpc-status", "12")
+                        .header("content-type", "application/grpc")
+                        .body(empty_body())
+                        .unwrap())
+                }),
             }
         }
     }

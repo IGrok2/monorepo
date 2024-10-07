@@ -37,7 +37,7 @@
         <Dialog.Header>
             <Dialog.Title>Create A Team</Dialog.Title>
             <Dialog.Description>
-                This is a Alpha feature reserved for large organizations, if you are working with a small number of individuals please use project members. 
+                This is a Alpha feature reserved for large organizations, if you are working with a small number of individuals please use project members.
                 If you need centralized billing for your organization please contact Aidan@Packetware.net / Edward@Packetware.net.
                 We would love to assist with your onboarding and correct usage of the platform.
             </Dialog.Description>

@@ -11,7 +11,7 @@ export function getCookie(name) {
 
 export function getJWT() {
   const cookies = document.cookie.split("; ");
-  const cookie = cookies.find((cookie) => cookie.startsWith('jwt' + "="));
+  const cookie = cookies.find((cookie) => cookie.startsWith("jwt" + "="));
 
   if (cookie) {
     return cookie.split("=")[1];

@@ -12,33 +12,31 @@ jobs:
   fmt:
     runs-on: ubuntu-latest
     steps:
-      - name: Install direnv
-        run: sudo apt-get update && sudo apt-get install -y direnv
-
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Run fmt
+      - name: Run Rust nightly
         run: |
-          eval "$(direnv export bash)"
-          direnv reload
-          cd src/opnieuw
-          cargo fmt
-          git diff --exit-code
+          rustup default nightly
+          rustup component add rustfmt
+
+      - name: Run fmt
+        working-directory: src/opnieuw
+        run: cargo fmt
         shell: bash
+
+      - name: Check for lint diffs
+        run: git diff --exit-code
 
   clippy:
     runs-on: ubuntu-latest
     steps:
-      - name: Install direnv
-        run: sudo apt-get update && sudo apt-get install -y direnv
-
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Run clippy
+        working-directory: src/opnieuw
         run: |
           sudo apt install protobuf-compiler -y
-          cd src/opnieuw
           cargo clippy
         shell: bash

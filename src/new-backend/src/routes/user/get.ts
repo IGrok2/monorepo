@@ -9,18 +9,18 @@ export const GetUserOutput = z.object({
     id: z.string(),
     name: z.string(),
     email: z.string(),
-  })
+  }),
 });
 
 /// Get the current authenticated users email and id
-export async function GetUser(req: Request): Promise<
-  WResponse<typeof GetUserOutput>
-> {
+export async function GetUser(
+  req: Request,
+): Promise<WResponse<typeof GetUserOutput>> {
   /// Create a new project
   const user = await prisma.user.findUnique({
     where: {
-      id: "cm1wzgu7y0000i32rf0g03m5w"
-    }
+      id: "cm1wzgu7y0000i32rf0g03m5w",
+    },
   });
 
   if (!user) {
@@ -35,10 +35,7 @@ export async function GetUser(req: Request): Promise<
 
   return {
     success: {
-      user
+      user,
     },
   };
-
-
-
 }

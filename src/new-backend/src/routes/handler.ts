@@ -19,7 +19,10 @@ import { wRPCserver } from "../wrpc/handler";
 
 const server = new wRPCserver(ServerRoutes);
 
-const allowedOrigins: string[] = ["http://dev.sive:3000", "https://packetware.net"];
+const allowedOrigins: string[] = [
+  "http://dev.sive:3000",
+  "https://packetware.net",
+];
 
 export async function HandleRequest(req: Request) {
   const origin = req.headers.get("Origin");
@@ -31,7 +34,8 @@ export async function HandleRequest(req: Request) {
         status: 204, // No Content
         headers: {
           "Access-Control-Allow-Origin": origin, // Dynamically set the origin
-          "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+          "Access-Control-Allow-Methods":
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS",
           "Access-Control-Allow-Headers": "Origin, Content-Type, Authorization",
           "Access-Control-Allow-Credentials": "true",
         },
@@ -64,6 +68,9 @@ export async function HandleRequest(req: Request) {
 
   //return resp !== null ? resp : NotFound();
   return resp
-    ? new Response(resp.body, { status: resp.status, headers: { ...resp.headers, ...headers } })
+    ? new Response(resp.body, {
+        status: resp.status,
+        headers: { ...resp.headers, ...headers },
+      })
     : NotFound();
 }

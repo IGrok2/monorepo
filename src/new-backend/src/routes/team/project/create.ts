@@ -9,8 +9,11 @@ export const createProjectInput = z.object({
     .string()
     .min(1, { message: "Name must not be empty." })
     .max(255, { message: "Name must not exceed 255 characters." })
-    .regex(/^[a-z0-9-_]+$/, { message: "Name must contain only lowercase letters, numbers, dashes, and underscores." }),
-  team_id: z.string()
+    .regex(/^[a-z0-9-_]+$/, {
+      message:
+        "Name must contain only lowercase letters, numbers, dashes, and underscores.",
+    }),
+  team_id: z.string(),
 });
 
 export const createProjectOutput = z.object({
@@ -18,7 +21,8 @@ export const createProjectOutput = z.object({
 });
 
 export async function createProject({
-  name, team_id,
+  name,
+  team_id,
 }: z.infer<typeof createProjectInput>): Promise<
   WResponse<typeof createProjectOutput>
 > {
@@ -26,7 +30,7 @@ export async function createProject({
   const project = await prisma.project.create({
     data: {
       name,
-      team_id
+      team_id,
     },
   });
 

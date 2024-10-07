@@ -7,8 +7,8 @@ repos:
       - id: check-added-large-files
   - repo: local
     hooks:
-      - id: golangci
-        name: golangci-lint
-        entry: ./ops/golanglint.sh
+      - id: backend
+        name: backend-lint
+        entry: ./ops/prettier.sh
         language: script
-        files: ^src/backend/.*\.go$
+        files: ^src/new-backend/.*\.ts$

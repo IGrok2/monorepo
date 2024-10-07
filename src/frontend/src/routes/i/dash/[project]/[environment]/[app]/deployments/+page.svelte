@@ -1,6 +1,6 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    
+
     import APIClient from "$lib/utils/api";
 
     /** @type {import('./$types').PageData} */
@@ -113,7 +113,7 @@
         <AlertDialog.Header>
             <AlertDialog.Title>Are you sure you want to restart?</AlertDialog.Title>
             <AlertDialog.Description>
-                This action can result in your application being down for the duration it takes to restart it. 
+                This action can result in your application being down for the duration it takes to restart it.
                 This will also apply new environment variable changes to your container when it begins running.
             </AlertDialog.Description>
         </AlertDialog.Header>

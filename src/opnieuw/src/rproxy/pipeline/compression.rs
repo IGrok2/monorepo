@@ -1,6 +1,6 @@
+use crate::models::request_context::RequestContext;
 use awc::ClientResponse;
 use bytes::Bytes;
-use crate::models::request_context::RequestContext;
 
 impl RequestContext {
     pub fn can_compress(&self, backend_headers: &HeaderMap) -> bool {
@@ -25,7 +25,7 @@ impl RequestContext {
 
         // check backend response
         for (k, v) in backend_headers {
-                if k.to_string().to_uppercase() == "CONTENT-ENCODING" {
+            if k.to_string().to_uppercase() == "CONTENT-ENCODING" {
                 if let Ok(value) = v.to_str() {
                     if value != "" {
                         can_compress = false;
@@ -38,14 +38,15 @@ impl RequestContext {
     }
 }
 
-use std::io::Read;
-use std::io::Write;
-use actix_http::header::HeaderMap;
 use crate::debug;
+use actix_http::header::HeaderMap;
+use std::io::{
+    Read,
+    Write,
+};
 
 pub fn compress_br<T: AsRef<[u8]>>(streamed: T) -> Vec<u8> {
-    let mut input = brotli::CompressorWriter::new(Vec::new(), 4096 /* buffer size */,
-                                                  5, 21);
+    let mut input = brotli::CompressorWriter::new(Vec::new(), 4096 /* buffer size */, 5, 21);
 
     input.write_all(streamed.as_ref());
 

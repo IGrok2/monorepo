@@ -3,58 +3,99 @@
 // also applies ratelimiting buckets
 // right now i think we should follow the philosophy that request data shouldn't be created and passed through!
 
-
-use std::ops::{Deref};
-use std::str::FromStr;
-use std::sync::{Arc};
-use actix_web_actors::ws::{Frame, ProtocolError};
-use awc::{BoxedSocket, ws};
-use actix_web_actors::ws::WebsocketContext;
-use actix::{Actor, AsyncContext, Handler, Recipient, StreamHandler};
+use actix::{
+    Actor,
+    AsyncContext,
+    Handler,
+    Recipient,
+    StreamHandler,
+};
 use actix_codec::Framed;
-use actix_http::header::HeaderMap;
-use actix_http::ws::{CloseCode, CloseReason};
-use actix_web::{HttpResponse};
-use actix_web::web::Payload;
-use actix_web::http::header::HeaderValue;
-use awc::Client;
-use awc::error::WsClientError;
-use awc::http::Version;
-use awc::ws::{Codec};
+use actix_http::{
+    header::HeaderMap,
+    ws::{
+        CloseCode,
+        CloseReason,
+    },
+};
+use actix_web::{
+    http::header::HeaderValue,
+    web::Payload,
+    HttpResponse,
+};
+use actix_web_actors::ws::{
+    Frame,
+    ProtocolError,
+    WebsocketContext,
+};
+use awc::{
+    error::WsClientError,
+    http::Version,
+    ws,
+    ws::Codec,
+    BoxedSocket,
+    Client,
+};
 use dashmap::DashMap;
 use futures::executor;
-use futures_util::SinkExt;
-use futures_util::stream::{SplitSink, SplitStream};
-use tokio::io::{AsyncRead, AsyncWrite};
+use futures_util::{
+    stream::{
+        SplitSink,
+        SplitStream,
+    },
+    SinkExt,
+};
+use std::{
+    ops::Deref,
+    str::FromStr,
+    sync::Arc,
+};
+use tokio::io::{
+    AsyncRead,
+    AsyncWrite,
+};
 
-use crate::models::request_context::{PipelineData, RequestContext};
+use crate::{
+    buckets::models::PublicBucket,
+    debug,
+    handler::pipeline::api_engine::models::WsMethods,
+    models::{
+        domain_context::OriginSetting,
+        egress_wrapper::EgressWrapper,
+        request_context::{
+            PipelineData,
+            RequestContext,
+        },
+    },
+    templates::error::internal_error,
+    tools::find_in_vec::find_in_vec,
+    GA,
+};
 use futures_util::StreamExt;
 use hyper::header::HeaderName;
 use url::Url;
-use crate::buckets::models::PublicBucket;
-use crate::{debug, GA};
-use crate::handler::pipeline::api_engine::models::WsMethods;
-use crate::models::domain_context::{OriginSetting};
-use crate::models::egress_wrapper::EgressWrapper;
-use crate::templates::error::internal_error;
-use crate::tools::find_in_vec::find_in_vec;
 
+use crate::vars::vars::{
+    NODE_NAME,
+    VERSION,
+};
 
-
-use crate::vars::vars::{NODE_NAME, VERSION};
-
-pub async fn handle_websocket(context: RequestContext, origin: (Arc<OriginSetting>, (Url, Option<String>)),
-                              bucket: Option<Arc<PublicBucket>>, allowed_methods: Vec<WsMethods>,
-                              _data: &[PipelineData], stream: Payload) -> HttpResponse {
-
+pub async fn handle_websocket(
+    context: RequestContext,
+    origin: (Arc<OriginSetting>, (Url, Option<String>)),
+    bucket: Option<Arc<PublicBucket>>,
+    allowed_methods: Vec<WsMethods>,
+    _data: &[PipelineData],
+    stream: Payload,
+) -> HttpResponse {
     debug!("HANDLE WEBSOCKET");
 
     let ws: &str = match origin.0.ssl {
         true => "wss",
-        false => "ws"
+        false => "ws",
     };
 
-    let mut actual_origin: Url = origin.1.0;
+    let mut actual_origin: Url = origin.1 .0;
 
     actual_origin.set_scheme(ws).unwrap();
 
@@ -70,9 +111,18 @@ pub async fn handle_websocket(context: RequestContext, origin: (Arc<OriginSettin
 
     for i in context.req.headers.iter() {
         let v = i.0.to_string().to_lowercase();
-        if v != "x-forwarded-for" || v != "server" || v != "via" || v != "x-country" || v != "x-continent" || v != "x-asn"
-        || v != "host" {
-            prepped_res.headers().unwrap().insert(i.0.clone(), i.1.clone());
+        if v != "x-forwarded-for"
+            || v != "server"
+            || v != "via"
+            || v != "x-country"
+            || v != "x-continent"
+            || v != "x-asn"
+            || v != "host"
+        {
+            prepped_res
+                .headers()
+                .unwrap()
+                .insert(i.0.clone(), i.1.clone());
         }
     }
 
@@ -84,42 +134,53 @@ pub async fn handle_websocket(context: RequestContext, origin: (Arc<OriginSettin
 
      */
 
-    if let Some(t) = origin.1.1.clone() {
-        prepped_res.headers().unwrap()
-            .insert(HeaderName::from_str("Host").unwrap(), HeaderValue::from_str(&t).unwrap());
+    if let Some(t) = origin.1 .1.clone() {
+        prepped_res.headers().unwrap().insert(
+            HeaderName::from_str("Host").unwrap(),
+            HeaderValue::from_str(&t).unwrap(),
+        );
     }
 
-    prepped_res.headers().unwrap()
-        .insert(HeaderName::from_str("server").unwrap(), HeaderValue::from_str(&format!("cdn.camp (opnieuw)/{}", VERSION)).unwrap());
+    prepped_res.headers().unwrap().insert(
+        HeaderName::from_str("server").unwrap(),
+        HeaderValue::from_str(&format!("cdn.camp (opnieuw)/{}", VERSION)).unwrap(),
+    );
 
-    prepped_res.headers().unwrap()
-        .insert(HeaderName::from_str("via").unwrap(), HeaderValue::from_str(NODE_NAME).unwrap());
+    prepped_res.headers().unwrap().insert(
+        HeaderName::from_str("via").unwrap(),
+        HeaderValue::from_str(NODE_NAME).unwrap(),
+    );
 
-    if origin.0.ip_data { // they have ip data enabled
+    if origin.0.ip_data {
+        // they have ip data enabled
         GA.rproxy.ip_data_requested.inc();
 
         let ip_data = context.get_ipdata();
 
-        prepped_res.headers().unwrap()
-            .insert(HeaderName::from_str("X-Country").unwrap(), HeaderValue::from_str(&ip_data.0).unwrap());
+        prepped_res.headers().unwrap().insert(
+            HeaderName::from_str("X-Country").unwrap(),
+            HeaderValue::from_str(&ip_data.0).unwrap(),
+        );
 
-        prepped_res.headers().unwrap()
-            .insert(HeaderName::from_str("X-Continent").unwrap(), HeaderValue::from_str(&ip_data.1).unwrap());
+        prepped_res.headers().unwrap().insert(
+            HeaderName::from_str("X-Continent").unwrap(),
+            HeaderValue::from_str(&ip_data.1).unwrap(),
+        );
 
-        prepped_res.headers().unwrap()
-            .insert(HeaderName::from_str("X-ASN").unwrap(), HeaderValue::from_str(&ip_data.2).unwrap());
+        prepped_res.headers().unwrap().insert(
+            HeaderName::from_str("X-ASN").unwrap(),
+            HeaderValue::from_str(&ip_data.2).unwrap(),
+        );
     }
 
     let egress_wrapper = EgressWrapper::new(context);
 
-    let connection = match prepped_res
-        .ws(actual_origin.to_string())
-        .connect()
-        .await {
+    let connection = match prepped_res.ws(actual_origin.to_string()).connect().await {
         Ok(t) => t.1,
         Err(t) => {
-            match t { // TODO: error matching
-                WsClientError::InvalidResponseStatus(_t) => { } // backend was not ready to recieve
+            match t {
+                // TODO: error matching
+                WsClientError::InvalidResponseStatus(_t) => {} // backend was not ready to recieve
                 WsClientError::InvalidUpgradeHeader => {}
                 WsClientError::InvalidConnectionHeader(_) => {}
                 WsClientError::MissingConnectionHeader => {}
@@ -136,9 +197,13 @@ pub async fn handle_websocket(context: RequestContext, origin: (Arc<OriginSettin
     let ctx = Arc::new(egress_wrapper);
 
     let wrapper = WebSocketWrapper {
-        conn: Arc::new(
-            WebSocketConn::new(connection, ctx.clone(), allowed_methods, bucket, ctx.ctx.ip.clone())
-        ),
+        conn: Arc::new(WebSocketConn::new(
+            connection,
+            ctx.clone(),
+            allowed_methods,
+            bucket,
+            ctx.ctx.ip.clone(),
+        )),
     };
 
     actix_web_actors::ws::start(wrapper, ctx.ctx.req.deref(), stream).unwrap_or_else(|x| {
@@ -162,23 +227,24 @@ pub struct WebSocketConn {
     pub ip: String,
 }
 
-impl WebSocketConn { // our connection to the backend server
+impl WebSocketConn {
+    // our connection to the backend server
     pub fn new(
         connection: Framed<BoxedSocket, Codec>,
         request_ctx: Arc<EgressWrapper>,
         allowed_methods: Vec<WsMethods>,
         bucket: Option<Arc<PublicBucket>>,
-        ip: String
+        ip: String,
     ) -> WebSocketConn {
-    let (sink_a, stream_a) = connection.split();
+        let (sink_a, stream_a) = connection.split();
 
-    let sink = DashMap::new();
-    sink.insert(0, sink_a);
+        let sink = DashMap::new();
+        sink.insert(0, sink_a);
 
-    let stream = DashMap::new();
-    stream.insert(0, stream_a);
+        let stream = DashMap::new();
+        stream.insert(0, stream_a);
 
-    WebSocketConn {
+        WebSocketConn {
             sink,
             stream,
             request_ctx,
@@ -194,12 +260,14 @@ impl actix::Message for Message {
     type Result = ();
 }
 
-impl Handler<Message> for WebSocketWrapper { // from the server to the client
+impl Handler<Message> for WebSocketWrapper {
+    // from the server to the client
     type Result = ();
 
-    fn handle(&mut self, msg: Message, ctx: &mut Self::Context) -> Self::Result { // handle messages from the server and route them to the client
+    fn handle(&mut self, msg: Message, ctx: &mut Self::Context) -> Self::Result {
+        // handle messages from the server and route them to the client
         if !self.conn.request_ctx.ctx.is_websocket_server_message_ok() {
-            return // it will do the error handling for us :p
+            return; // it will do the error handling for us :p
         }
 
         match msg.0 {
@@ -217,8 +285,14 @@ async fn handle_server_messages(wrapper: WebSocketWrapper, ctx: Recipient<Messag
     let mut server = wrapper.conn.stream.get_mut(&0).unwrap();
 
     while let Some(msg) = server.next().await {
-        match wrapper.conn.request_ctx.ctx.ws_timeout(ctx.send(Message(msg.unwrap()))).await {
-            Ok(_) => {},
+        match wrapper
+            .conn
+            .request_ctx
+            .ctx
+            .ws_timeout(ctx.send(Message(msg.unwrap())))
+            .await
+        {
+            Ok(_) => {}
             Err(_) => GA.rproxy.websocket_error.inc(),
         };
     }
@@ -254,13 +328,18 @@ impl Actor for WebSocketWrapper {
         actix_web::rt::spawn(async move {
             let new_conn = req_ctx.clone(); // it's an arc
             let ctx = addr.clone();
-            let _ = new_conn.ctx.total_request_timeout(handle_server_messages(new_self.clone(), ctx.recipient())).await;
+            let _ = new_conn
+                .ctx
+                .total_request_timeout(handle_server_messages(new_self.clone(), ctx.recipient()))
+                .await;
         });
     }
 }
 
-impl StreamHandler<Result<ws::Message, ProtocolError>> for WebSocketWrapper { // from the client to the server
-    fn handle(&mut self, msg: Result<ws::Message, ProtocolError>, _ctx: &mut Self::Context) { // handle each incoming message from the client
+impl StreamHandler<Result<ws::Message, ProtocolError>> for WebSocketWrapper {
+    // from the client to the server
+    fn handle(&mut self, msg: Result<ws::Message, ProtocolError>, _ctx: &mut Self::Context) {
+        // handle each incoming message from the client
         self.conn.request_ctx.ctx.domain.analytic.total.inc();
 
         match self.conn.bucket.clone() {
@@ -273,9 +352,15 @@ impl StreamHandler<Result<ws::Message, ProtocolError>> for WebSocketWrapper { //
 
                     _ctx.close(reason.clone()); // TODO: message on close
 
-                    let _ = executor::block_on(self.conn.sink.get_mut(&0).unwrap().send(ws::Message::Close(reason)));
+                    let _ = executor::block_on(
+                        self.conn
+                            .sink
+                            .get_mut(&0)
+                            .unwrap()
+                            .send(ws::Message::Close(reason)),
+                    );
 
-                    return
+                    return;
                     // bucket will do the analytics
                 }
             }
@@ -283,54 +368,82 @@ impl StreamHandler<Result<ws::Message, ProtocolError>> for WebSocketWrapper { //
         };
 
         if !self.conn.request_ctx.ctx.is_websocket_message_ok() {
-            return
+            return;
         }
 
         match msg {
             Ok(ws::Message::Ping(msg)) => {
-                if !find_in_vec(&self.conn.allowed_methods, &WsMethods::Ping) { // this method isn't allowed
+                if !find_in_vec(&self.conn.allowed_methods, &WsMethods::Ping) {
+                    // this method isn't allowed
                     GA.rproxy.ws_method_not_allowed.inc();
 
-                    return
+                    return;
                 }
 
                 GA.rproxy.ping.inc();
 
-                let _ = executor::block_on(self.conn.sink.get_mut(&0).unwrap().send(ws::Message::Ping(msg)));
-
-            },
+                let _ = executor::block_on(
+                    self.conn
+                        .sink
+                        .get_mut(&0)
+                        .unwrap()
+                        .send(ws::Message::Ping(msg)),
+                );
+            }
             Ok(ws::Message::Text(text)) => {
-                if !find_in_vec(&self.conn.allowed_methods, &WsMethods::Txt) { // this method isn't allowed
+                if !find_in_vec(&self.conn.allowed_methods, &WsMethods::Txt) {
+                    // this method isn't allowed
                     GA.rproxy.ws_method_not_allowed.inc();
 
-                    return
+                    return;
                 }
 
                 GA.rproxy.text.inc();
 
-                let _ = executor::block_on(self.conn.sink.get_mut(&0).unwrap().send(ws::Message::Text(text.clone())));
-            },
+                let _ = executor::block_on(
+                    self.conn
+                        .sink
+                        .get_mut(&0)
+                        .unwrap()
+                        .send(ws::Message::Text(text.clone())),
+                );
+            }
             Ok(ws::Message::Binary(bin)) => {
-                if !find_in_vec(&self.conn.allowed_methods, &WsMethods::Binary) { // this method isn't allowed
+                if !find_in_vec(&self.conn.allowed_methods, &WsMethods::Binary) {
+                    // this method isn't allowed
                     GA.rproxy.ws_method_not_allowed.inc();
 
-                    return
+                    return;
                 }
 
                 GA.rproxy.binary.inc();
 
-                let _ = executor::block_on(self.conn.sink.get_mut(&0).unwrap().send(ws::Message::Binary(bin)));
-            },
-            Ok(ws::Message::Close(reason)) => { // client sends the close call
-                if !find_in_vec(&self.conn.allowed_methods, &WsMethods::Close) { // this method isn't allowed
+                let _ = executor::block_on(
+                    self.conn
+                        .sink
+                        .get_mut(&0)
+                        .unwrap()
+                        .send(ws::Message::Binary(bin)),
+                );
+            }
+            Ok(ws::Message::Close(reason)) => {
+                // client sends the close call
+                if !find_in_vec(&self.conn.allowed_methods, &WsMethods::Close) {
+                    // this method isn't allowed
                     GA.rproxy.ws_method_not_allowed.inc();
 
-                    return
+                    return;
                 }
 
                 GA.rproxy.close.inc();
 
-                let _ = executor::block_on(self.conn.sink.get_mut(&0).unwrap().send(ws::Message::Close(reason.clone())));
+                let _ = executor::block_on(
+                    self.conn
+                        .sink
+                        .get_mut(&0)
+                        .unwrap()
+                        .send(ws::Message::Close(reason.clone())),
+                );
 
                 _ctx.close(reason);
             }
@@ -338,7 +451,6 @@ impl StreamHandler<Result<ws::Message, ProtocolError>> for WebSocketWrapper { //
         };
     }
 }
-
 
 /*
 impl StreamHandler<Result<ws::Message, ProtocolError>> for WebSocketConn {

@@ -65,25 +65,24 @@
 
 @font-face {
   font-family: "mona";
-  src: url("/monasans/WOFF2/Mona-Sans-SemiBoldWide.woff2")
+  src: url("/monasans/WOFF2/Mona-Sans-SemiBoldWide.woff2");
 }
 
 @font-face {
   font-family: "mona-regular";
-  src: url("/monasans/Mona-Sans.woff2")
+  src: url("/monasans/Mona-Sans.woff2");
 }
 
-
 @font-face {
-  font-family: 'mona-ultrawide';
-  src: url('/hubot/Hubot-Sans.woff2');
+  font-family: "mona-ultrawide";
+  src: url("/hubot/Hubot-Sans.woff2");
   font-weight: bold;
   font-stretch: 200%;
 }
 
 @font-face {
   font-family: "hubot";
-  src: url("/hubot/TTF/Hubot-Sans-BoldWide.ttf")
+  src: url("/hubot/TTF/Hubot-Sans-BoldWide.ttf");
 }
 
 html {
